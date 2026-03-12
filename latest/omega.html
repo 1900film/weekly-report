@@ -17,6 +17,8 @@
     --ch3-gradient: linear-gradient(135deg, #D1FAE5 0%, rgba(209,250,229,0) 80%);
     --ch4-color: #F59E0B; --ch4-light: #FEF3C7; --ch4-dark: #B45309;
     --ch4-gradient: linear-gradient(135deg, #FEF3C7 0%, rgba(254,243,199,0) 80%);
+    --ch5-color: #EC4899; --ch5-light: #FCE7F3; --ch5-dark: #9D174D;
+    --ch5-gradient: linear-gradient(135deg, #FCE7F3 0%, rgba(252,231,243,0) 80%);
     --bg-warm-white: #FFF8F0; --text-dark-navy: #1E293B; --text-sub: #64748B;
     --border-light: #E2E8F0;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08); --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
@@ -47,6 +49,7 @@
   .main-nav__link[data-chapter="2"].active{color:var(--ch2-color)}
   .main-nav__link[data-chapter="3"].active{color:var(--ch3-color)}
   .main-nav__link[data-chapter="4"].active{color:var(--ch4-color)}
+  .main-nav__link[data-chapter="5"].active{color:var(--ch5-color)}
   .main-nav__hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:32px;height:32px;cursor:pointer;background:none;border:none;padding:4px}
   .main-nav__hamburger span{display:block;width:24px;height:2px;background:var(--text-dark-navy);border-radius:2px;transition:all var(--transition-base)}
   .main-nav__hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
@@ -71,16 +74,19 @@
   [data-chapter="2"] .chapter-header{background:var(--ch2-gradient)}
   [data-chapter="3"] .chapter-header{background:var(--ch3-gradient)}
   [data-chapter="4"] .chapter-header{background:var(--ch4-gradient)}
+  [data-chapter="5"] .chapter-header{background:var(--ch5-gradient)}
   .chapter-header__number{display:inline-block;font-size:1rem;font-weight:700;letter-spacing:0.1em;padding:0.3rem 1rem;border-radius:999px;margin-bottom:1rem;background:rgba(255,255,255,0.6)}
   [data-chapter="1"] .chapter-header__number{color:var(--ch1-dark);border:2px solid var(--ch1-color)}
   [data-chapter="2"] .chapter-header__number{color:var(--ch2-dark);border:2px solid var(--ch2-color)}
   [data-chapter="3"] .chapter-header__number{color:var(--ch3-dark);border:2px solid var(--ch3-color)}
   [data-chapter="4"] .chapter-header__number{color:var(--ch4-dark);border:2px solid var(--ch4-color)}
+  [data-chapter="5"] .chapter-header__number{color:var(--ch5-dark);border:2px solid var(--ch5-color)}
   .chapter-header__title{font-size:2.5rem;font-weight:900;margin-bottom:0.5rem}
   [data-chapter="1"] .chapter-header__title{color:var(--ch1-dark)}
   [data-chapter="2"] .chapter-header__title{color:var(--ch2-dark)}
   [data-chapter="3"] .chapter-header__title{color:var(--ch3-dark)}
   [data-chapter="4"] .chapter-header__title{color:var(--ch4-dark)}
+  [data-chapter="5"] .chapter-header__title{color:var(--ch5-dark)}
   .chapter-header__subtitle{font-size:1.1rem;color:var(--text-sub);font-family:var(--font-serif)}
   .section-heading{margin:3rem 0 1.5rem;padding-bottom:0.5rem;border-bottom:2px solid var(--border-light);display:flex;align-items:center;gap:0.75rem}
   .section-heading__badge{display:inline-flex;align-items:center;justify-content:center;padding:0.2rem 0.75rem;border-radius:6px;font-size:0.75rem;font-weight:700;color:#FFF;flex-shrink:0}
@@ -88,6 +94,7 @@
   [data-chapter="2"] .section-heading__badge{background:var(--ch2-color)}
   [data-chapter="3"] .section-heading__badge{background:var(--ch3-color)}
   [data-chapter="4"] .section-heading__badge{background:var(--ch4-color)}
+  [data-chapter="5"] .section-heading__badge{background:var(--ch5-color)}
   .hero-stat-row{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin:2.5rem 0}
   .hero-stat{text-align:center;padding:2rem 1.5rem;background:#FFF;border-radius:16px;box-shadow:var(--shadow-sm);transition:all var(--transition-base);min-width:160px;flex:1;max-width:260px;position:relative;overflow:hidden}
   .hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
@@ -216,6 +223,54 @@
   @keyframes pipelineDotFlow{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 6px);opacity:0}}
   .pipeline-branch{display:flex;flex-direction:column;align-items:center;gap:0.4rem}
   .pipeline-branch-connector{width:2px;height:12px;border-left:2px dashed #CBD5E1}
+  /* Heatmap styles (CH5) */
+  .heatmap-tabs{display:flex;gap:0;margin:2rem 0 0;border-bottom:2px solid var(--border-light)}
+  .heatmap-tab{padding:0.75rem 1.5rem;font-size:0.9rem;font-weight:700;cursor:pointer;border:none;background:none;color:var(--text-sub);border-bottom:3px solid transparent;transition:all var(--transition-base)}
+  .heatmap-tab.active{color:var(--ch5-color);border-bottom-color:var(--ch5-color)}
+  .heatmap-tab:hover{color:var(--ch5-dark)}
+  .heatmap-panel{display:none;padding:1.5rem 0}
+  .heatmap-panel.active{display:block}
+  .heatmap-view-toggle{display:flex;gap:0.5rem;margin:1rem 0}
+  .heatmap-view-btn{padding:0.4rem 1rem;font-size:0.8rem;font-weight:700;border:2px solid var(--border-light);border-radius:8px;background:#FFF;cursor:pointer;transition:all var(--transition-base);color:var(--text-sub)}
+  .heatmap-view-btn.active-total{border-color:#F59E0B;color:#B45309;background:#FEF3C7}
+  .heatmap-view-btn.active-1900{border-color:#0D9488;color:#0F766E;background:#CCFBF1}
+  .heatmap-grid{display:grid;gap:2px;margin:1rem 0}
+  .heatmap-grid--weekday{grid-template-columns:48px repeat(24,1fr)}
+  .heatmap-grid--weekend{grid-template-columns:48px repeat(24,1fr)}
+  .heatmap-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;border-radius:4px;transition:all 0.2s;cursor:default;position:relative}
+  .heatmap-cell:hover{transform:scale(1.15);z-index:2;box-shadow:var(--shadow-md)}
+  .heatmap-cell--header{background:none;font-size:0.6rem;color:var(--text-sub);font-weight:700;aspect-ratio:auto}
+  .heatmap-cell--dow{background:none;font-size:0.75rem;color:var(--text-dark-navy);font-weight:900;aspect-ratio:auto;justify-content:flex-end;padding-right:8px}
+  .heatmap-legend{display:flex;align-items:center;gap:0.5rem;margin:1rem 0;font-size:0.75rem;color:var(--text-sub)}
+  .heatmap-legend__bar{width:120px;height:12px;border-radius:6px}
+  .heatmap-legend__bar--amber{background:linear-gradient(90deg,#FFF7ED,#F59E0B,#B45309)}
+  .heatmap-legend__bar--teal{background:linear-gradient(90deg,#F0FDFA,#14B8A6,#0F766E)}
+  .zone-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.5rem 0}
+  .zone-card{background:#FFF;border-radius:12px;padding:1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid;transition:all var(--transition-base)}
+  .zone-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .zone-card--A{border-left-color:#EF4444}
+  .zone-card--B{border-left-color:#F59E0B}
+  .zone-card--C{border-left-color:#6366F1}
+  .zone-card--D{border-left-color:#94A3B8}
+  .zone-card__header{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem}
+  .zone-card__badge{font-size:0.75rem;font-weight:900;padding:0.15rem 0.5rem;border-radius:4px;color:#FFF}
+  .zone-card__badge--A{background:#EF4444}
+  .zone-card__badge--B{background:#F59E0B}
+  .zone-card__badge--C{background:#6366F1}
+  .zone-card__badge--D{background:#94A3B8}
+  .zone-card__title{font-size:0.85rem;font-weight:700;color:var(--text-dark-navy)}
+  .zone-card__detail{font-size:0.8rem;color:var(--text-sub);line-height:1.5}
+  .zone-card__stat{font-family:var(--font-code);font-weight:700;color:var(--text-dark-navy)}
+  .cpa-bar-chart{display:flex;align-items:flex-end;gap:3px;height:180px;margin:1.5rem 0;padding:0 0.25rem}
+  .cpa-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}
+  .cpa-bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height 1s cubic-bezier(0.25,0.46,0.45,0.94);display:flex;align-items:flex-start;justify-content:center;padding-top:2px;font-size:0.55rem;font-weight:700;color:#FFF;min-height:0}
+  .cpa-bar-fill--green{background:linear-gradient(180deg,#6EE7B7,#059669)}
+  .cpa-bar-fill--yellow{background:linear-gradient(180deg,#FDE68A,#D97706)}
+  .cpa-bar-fill--red{background:linear-gradient(180deg,#FCA5A5,#DC2626)}
+  .cpa-bar-label{font-size:0.6rem;color:var(--text-sub);font-weight:700}
+  .cpa-legend{display:flex;gap:1rem;margin:0.5rem 0;font-size:0.75rem;align-items:center;justify-content:center}
+  .cpa-legend__item{display:flex;align-items:center;gap:0.3rem}
+  .cpa-legend__dot{width:10px;height:10px;border-radius:3px}
   .production-notes{text-align:center;padding:3rem 2rem;background:var(--text-dark-navy);color:rgba(255,255,255,0.6);font-size:0.85rem}
   .production-notes__logo{font-weight:900;font-size:1rem;color:rgba(255,255,255,0.9);margin-bottom:0.5rem}
   .production-notes__item{margin-top:0.4rem}
@@ -238,6 +293,8 @@
     .action-grid{grid-template-columns:1fr} .side-tables{grid-template-columns:1fr}
     .donut-container{flex-direction:column} .vbar-chart{height:160px;gap:3px}
     .serp-table{font-size:0.7rem} .serp-table thead th,.serp-table tbody td{padding:0.4rem 0.3rem}
+    .heatmap-grid{overflow-x:auto} .heatmap-cell{font-size:0.5rem}
+    .zone-grid{grid-template-columns:1fr} .cpa-bar-chart{height:140px}
   }
   @media(max-width:480px){
     .hero-stat__value{font-size:2rem} .pipeline-node{min-width:160px}
@@ -264,6 +321,7 @@
       <li><a href="#ch2" class="main-nav__link" data-chapter="2">Trends</a></li>
       <li><a href="#ch3" class="main-nav__link" data-chapter="3">CV Structure</a></li>
       <li><a href="#ch4" class="main-nav__link" data-chapter="4">SERP Competition</a></li>
+      
     </ul>
   </div>
 </nav>
@@ -273,7 +331,7 @@
   <div class="cover__badge">CONFIDENTIAL - 1900film Internal</div>
   <h1 class="cover__title">OMEGA オメガ3<br>&#x5206;&#x6790;&#x30C0;&#x30C3;&#x30B7;&#x30E5;&#x30DC;&#x30FC;&#x30C9;</h1>
   <p class="cover__subtitle">sGTM &times; SERP &#x7D71;&#x5408;&#x5206;&#x6790;&#x30EC;&#x30DD;&#x30FC;&#x30C8;</p>
-  <p class="cover__date">2026-03-11 (Week 11)</p>
+  <p class="cover__date">2026-03-12 (Week 11)</p>
   <div class="visual-pipeline" style="margin:2rem auto;">
     <div class="pipeline-node"><span class="pipeline-node__icon">&#x1F4CA;</span><span class="pipeline-node__label">Overview</span><span class="pipeline-node__sub">Executive Summary</span></div>
     <div class="pipeline-connector"><div class="pipeline-connector__line"></div></div>
@@ -302,12 +360,12 @@
         <span class="hero-stat__sub">sGTM all_conversions</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat__value">76</span>
+        <span class="hero-stat__value">72</span>
         <span class="hero-stat__label">Weekly CV</span>
-        <span class="hero-stat__sub">3/4〜3/10</span>
+        <span class="hero-stat__sub">3/5〜3/11</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat__value">9.7%</span>
+        <span class="hero-stat__value">9.3%</span>
         <span class="hero-stat__label">&#x81EA;&#x793E;adcode&#x6BD4;&#x7387;</span>
         <span class="hero-stat__sub">&#x904E;&#x53BB;7&#x65E5;&#x9593;</span>
       </div>
@@ -353,7 +411,7 @@
       
       <div class="hbar-row"><span class="hbar-label">2026-01</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="4.7%"><span>3</span></div></div><span class="hbar-meta hbar-meta--down">-95.3%</span></div>
       
-      <div class="hbar-row"><span class="hbar-label">2026-03</span><div class="hbar-track"><div class="hbar-fill hbar-fill--projected" data-width="10.9%"><span>7* (推計19)</span></div></div><span class="hbar-meta hbar-meta--up">+133.3%</span></div>
+      <div class="hbar-row"><span class="hbar-label">2026-03</span><div class="hbar-track"><div class="hbar-fill hbar-fill--projected" data-width="10.9%"><span>7* (推計17)</span></div></div><span class="hbar-meta hbar-meta--up">+133.3%</span></div>
       
     </div>
     
@@ -367,8 +425,6 @@
     </div>
     <div class="vbar-chart animate-on-scroll" id="dailyChart">
       
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="29.4%">5</div><span class="vbar-label">2/25</span></div>
-      
       <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="76.5%">13</div><span class="vbar-label">2/26</span></div>
       
       <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="64.7%">11</div><span class="vbar-label">2/27</span></div>
@@ -381,7 +437,7 @@
       
       <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="82.4%">14</div><span class="vbar-label">3/3</span></div>
       
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="70.6%">12</div><span class="vbar-label">3/4</span></div>
+      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="70.6%">12</div><span class="vbar-label">3/4</span></div>
       
       <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="76.5%">13</div><span class="vbar-label">3/5</span></div>
       
@@ -395,13 +451,13 @@
       
       <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="52.9%">9</div><span class="vbar-label">3/10</span></div>
       
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="52.9%">9</div><span class="vbar-label">3/11</span></div>
+      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="100.0%">17</div><span class="vbar-label">3/11</span></div>
       
     </div>
     <div class="week-compare animate-on-scroll">
-      <div class="week-compare__card"><div class="week-compare__label">Week 1 (2/25-3/3)</div><div class="week-compare__value">81</div></div>
-      <div class="week-compare__card"><div class="week-compare__label">Week 2 (3/4-3/11)</div><div class="week-compare__value">76</div></div>
-      <div class="week-compare__card week-compare__card--delta"><div class="week-compare__label">WoW</div><div class="week-compare__value">-6.2%</div></div>
+      <div class="week-compare__card"><div class="week-compare__label">Week 1 (2/26-3/4)</div><div class="week-compare__value">88</div></div>
+      <div class="week-compare__card"><div class="week-compare__label">Week 2 (3/5-3/11)</div><div class="week-compare__value">72</div></div>
+      <div class="week-compare__card week-compare__card--delta"><div class="week-compare__label">WoW</div><div class="week-compare__value">-18.2%</div></div>
     </div>
 
     <!-- 2-3 adcode Breakdown -->
@@ -410,27 +466,27 @@
       <h3>adcode Breakdown (7 Days)</h3>
     </div>
     <div class="donut-container animate-on-scroll">
-      <div class="donut" style="background:conic-gradient(#EF4444 0.0% 62.5%,#F97316 62.5% 83.3%,#22C55E 83.3% 93.0%,#94A3B8 93.0% 98.6%,#6366F1 98.6% 100.0%);">
-        <div class="donut-center"><span class="donut-center__value">72</span><span class="donut-center__label">Total CV</span></div>
+      <div class="donut" style="background:conic-gradient(#EF4444 0.0% 62.7%,#F97316 62.7% 82.7%,#22C55E 82.7% 92.0%,#94A3B8 92.0% 98.7%,#6366F1 98.7% 100.0%);">
+        <div class="donut-center"><span class="donut-center__value">75</span><span class="donut-center__label">Total CV</span></div>
       </div>
       <div class="donut-legend">
         
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#EF4444;"></div><span class="donut-legend__label">omega_rent_a</span><span class="donut-legend__value">45 (62.5%)</span></div>
+        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#EF4444;"></div><span class="donut-legend__label">omega_rent_a</span><span class="donut-legend__value">47 (62.7%)</span></div>
         
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#F97316;"></div><span class="donut-legend__label">omega_rent_9314</span><span class="donut-legend__value">15 (20.8%)</span></div>
+        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#F97316;"></div><span class="donut-legend__label">omega_rent_9314</span><span class="donut-legend__value">15 (20.0%)</span></div>
         
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#22C55E;"></div><span class="donut-legend__label">omega_1900_1</span><span class="donut-legend__value">7 (9.7%) &larr; &#x81EA;&#x793E;</span></div>
+        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#22C55E;"></div><span class="donut-legend__label">omega_1900_1</span><span class="donut-legend__value">7 (9.3%) &larr; &#x81EA;&#x793E;</span></div>
         
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#94A3B8;"></div><span class="donut-legend__label">omega</span><span class="donut-legend__value">4 (5.6%)</span></div>
+        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#94A3B8;"></div><span class="donut-legend__label">omega</span><span class="donut-legend__value">5 (6.7%)</span></div>
         
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#6366F1;"></div><span class="donut-legend__label">omega_so</span><span class="donut-legend__value">1 (1.4%)</span></div>
+        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#6366F1;"></div><span class="donut-legend__label">omega_so</span><span class="donut-legend__value">1 (1.3%)</span></div>
         
       </div>
     </div>
     
     <div class="insight-card animate-on-scroll">
       <span class="insight-card__icon">&#x26A0;&#xFE0F;</span>
-      <span class="insight-card__text">競合adcodeが 90.3% を占有。自社運用は 9.7%</span>
+      <span class="insight-card__text">競合adcodeが 90.7% を占有。自社運用は 9.3%</span>
     </div>
     
 
@@ -766,10 +822,12 @@
   </div></div>
 </section>
 
+
+
 <!-- FOOTER -->
 <footer class="production-notes">
   <div class="production-notes__logo">1900film Data Intelligence</div>
-  <div class="production-notes__item">Generated: 2026-03-11 (Week 11)</div>
+  <div class="production-notes__item">Generated: 2026-03-12 (Week 11)</div>
   <div class="production-notes__item">Powered by Claude Code &mdash; Weekly Automated Report</div>
 </footer>
 
@@ -880,6 +938,47 @@
     });
   },{rootMargin:'0px 0px -60px 0px',threshold:0.1});
   pipelines.forEach(function(pipeline){pipelineObserver.observe(pipeline);});
+  /* Heatmap tab switching */
+  var heatmapTabs=document.querySelectorAll('.heatmap-tab');
+  heatmapTabs.forEach(function(tab){
+    tab.addEventListener('click',function(){
+      heatmapTabs.forEach(function(t){t.classList.remove('active');});
+      tab.classList.add('active');
+      document.querySelectorAll('.heatmap-panel').forEach(function(p){p.classList.remove('active');});
+      var target=document.getElementById(tab.getAttribute('data-target'));
+      if(target) target.classList.add('active');
+    });
+  });
+  /* Heatmap view toggle (all-channel vs 1900) */
+  var viewBtns=document.querySelectorAll('.heatmap-view-btn');
+  viewBtns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      viewBtns.forEach(function(b){b.classList.remove('active-total','active-1900');});
+      var view=btn.getAttribute('data-view');
+      btn.classList.add(view==='total'?'active-total':'active-1900');
+      var cells=document.querySelectorAll('.heatmap-cell[data-cv-total]');
+      cells.forEach(function(cell){
+        if(view==='total'){
+          var val=cell.getAttribute('data-cv-total');
+          var intensity=parseFloat(cell.getAttribute('data-intensity-total'));
+          cell.textContent=val;
+          cell.style.background='rgba(245,158,11,'+intensity+')';
+          cell.style.color=intensity>0.5?'#FFF':'#92400E';
+        }else{
+          var val=cell.getAttribute('data-cv-1900');
+          var intensity=parseFloat(cell.getAttribute('data-intensity-1900'));
+          cell.textContent=val;
+          cell.style.background='rgba(20,184,166,'+intensity+')';
+          cell.style.color=intensity>0.5?'#FFF':'#0F766E';
+        }
+      });
+      var legendBar=document.getElementById('legendBar');
+      if(legendBar){
+        if(view==='total'){legendBar.className='heatmap-legend__bar heatmap-legend__bar--amber';}
+        else{legendBar.className='heatmap-legend__bar heatmap-legend__bar--teal';}
+      }
+    });
+  });
   var hbarFills=document.querySelectorAll('.hbar-fill[data-width]');
   var hbarObserver=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
@@ -894,6 +993,9 @@
     });
   },{rootMargin:'0px 0px -40px 0px',threshold:0.1});
   vbarFills.forEach(function(fill){fill.style.height='0';vbarObserver.observe(fill);});
+  /* CPA bar animation */
+  var cpaFills=document.querySelectorAll('.cpa-bar-fill[data-height]');
+  cpaFills.forEach(function(fill){fill.style.height='0';vbarObserver.observe(fill);});
 })();
 </script>
 </body>
