@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIAGE CAPI データ構造整理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: #e2e0db;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6963;
+    --text-muted: #9e9a92;
+    --accent: #1a56db;
+    --accent-light: #e8effc;
+    --success: #16803c;
+    --success-bg: #ecfdf3;
+    --warning: #b45309;
+    --warning-bg: #fef9ec;
+    --danger: #c4320a;
+    --danger-bg: #fef2ee;
+    --priority-high: #dc2626;
+    --priority-low: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--text-primary);
+  }
+
+  .header-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .header-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Priority Banner */
+  .priority-banner {
+    background: var(--text-primary);
+    color: #fff;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+  }
+
+  .priority-banner h2 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+  }
+
+  .priority-banner p {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .priority-banner .target-values {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .target-values .tv-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .tv-item .tv-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .tv-item .tv-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: #4ade80;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  /* Event Overview Cards */
+  .event-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .event-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .event-card .ec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .event-card .ec-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .event-card .ec-event {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-light);
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .event-card .ec-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Tables */
+  .table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: #fafaf8;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th.center { text-align: center; }
+
+  tbody td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #f2f1ee;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody td.center { text-align: center; }
+
+  .check { color: var(--success); font-weight: 600; }
+  .dash { color: var(--text-muted); }
+  .tri { color: var(--warning); font-weight: 500; }
+
+  .td-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .stars {
+    color: var(--warning);
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+
+  .row-group-header td {
+    background: #fafaf8;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-success { background: var(--success-bg); color: var(--success); }
+  .badge-warning { background: var(--warning-bg); color: var(--warning); }
+  .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+  /* Dedup Section */
+  .dedup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .dedup-formula {
+    background: #1a1a18;
+    color: #e2e0db;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    padding: 14px 20px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dedup-formula .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #6b6963;
+    text-transform: uppercase;
+  }
+
+  .dedup-formula .code {
+    color: #4ade80;
+  }
+
+  .dedup-roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .dedup-role {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .dedup-role .dr-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .dedup-role .dr-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .dedup-role .dr-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .dedup-key-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .dedup-key-section h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .dedup-key-section p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .dk-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* EMQ Score Card */
+  .emq-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .emq-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .emq-card .ec-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .emq-card .ec-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .emq-card .ec-score.high { color: var(--success); }
+  .emq-card .ec-score.mid { color: var(--warning); }
+  .emq-card .ec-score.low { color: var(--danger); }
+
+  .emq-card .ec-items {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Next Actions */
+  .actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .action-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    position: relative;
+    border-left: 4px solid transparent;
+  }
+
+  .action-item.high { border-left-color: var(--priority-high); }
+  .action-item.low { border-left-color: var(--priority-low); }
+
+  .action-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .action-priority {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  .action-priority.high { background: #fef2f2; color: var(--priority-high); }
+  .action-priority.low { background: #f3f4f6; color: var(--priority-low); }
+
+  .action-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .action-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+
+  .action-target {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--success-bg);
+    color: var(--success);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  .action-reason {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .action-reason strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* Footnote */
+  .footnote {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  @media (max-width: 700px) {
+    .event-cards, .emq-cards, .dedup-roles { grid-template-columns: 1fr; }
+    .target-values { flex-direction: column; gap: 8px; }
+    table { font-size: 12px; }
+    thead th, tbody td { padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-label">CAPI Implementation</div>
+    <h1>VIAGE — Conversion API データ構造整理</h1>
+    <div class="header-meta">Stape sGTM 経由 Meta CAPI ・ 3イベントソース構成</div>
+  </header>
+
+  <!-- Priority Banner -->
+  <div class="priority-banner">
+    <h2>最優先確認事項</h2>
+    <p>配信開始後、Meta Events Manager にて Purchase イベントの下記2点を確認する</p>
+    <div class="target-values">
+      <div class="tv-item">
+        <span class="tv-label">EMQ</span>
+        <span class="tv-value">9.0</span>
+      </div>
+      <div class="tv-item">
+        <span class="tv-label">重複</span>
+        <span class="tv-value">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 01: Event Overview -->
+  <section class="section">
+    <div class="section-number">01</div>
+    <h2>イベント構成</h2>
+    <p class="section-desc">VIAGEは購入経路により3種類のイベントソースが存在する。フォームCV・Tailor CVは同一のevent名 <code class="dk-code">cv_1900</code> で発火し、Meta側では共にPurchaseとして処理される。</p>
+    <div class="event-cards">
+      <div class="event-card">
+        <div class="ec-num">①</div>
+        <div class="ec-name">フォームCV</div>
+        <div class="ec-event">cv_1900</div>
+        <div class="ec-desc">通常フォーム経由の購入完了。ユーザーデータ・商品データともにフル取得。</div>
+      </div>
+      <div class="event-card">
+        <div class="ec-num">②</div>
+        <div class="ec-name">Tailor CV</div>
+        <div class="ec-event">cv_1900</div>
+        <div class="ec-desc">Tailorチャットボット経由の購入完了。ユーザーデータはフル取得。商品データは一部欠損。</div>
+      </div>
+      <div class="event-card">
+        <div class="ec-num">③</div>
+        <div class="ec-name">tailor_mcv</div>
+        <div class="ec-event">tailor_mcv</div>
+        <div class="ec-desc">Tailorフロー途中のメール取得ステップ。postMessage経由。MCVとしてLead等に変換。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 02: Data Comparison -->
+  <section class="section">
+    <div class="section-number">02</div>
+    <h2>イベント別 取得データ比較</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>データ</th>
+            <th>d1900キー</th>
+            <th class="center">① フォームCV</th>
+            <th class="center">② Tailor CV</th>
+            <th class="center">③ tailor_mcv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-group-header"><td colspan="5">識別・金額</td></tr>
+          <tr><td>広告コード</td><td class="td-mono">adcode</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>注文ID</td><td class="td-mono">orderId</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>顧客ID</td><td class="td-mono">customerId</td><td class="center check">✓</td><td class="center dash">—</td><td class="center dash">—</td></tr>
+          <tr><td>購入金額</td><td class="td-mono">Value</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>通貨</td><td class="td-mono">Currency</td><td class="center check">✓</td><td class="center dash">—</td><td class="center dash">—</td></tr>
+
+          <tr class="row-group-header"><td colspan="5">ユーザーデータ（EMQ対象）</td></tr>
+          <tr><td>メール</td><td class="td-mono">Email</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+          <tr><td>電話</td><td class="td-mono">PhoneNumber</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>名</td><td class="td-mono">FirstName</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>姓</td><td class="td-mono">LastName</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>番地</td><td class="td-mono">Street</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>市区町村</td><td class="td-mono">City</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>都道府県</td><td class="td-mono">Region</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>郵便番号</td><td class="td-mono">PostalCode</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td>国</td><td class="td-mono">Country</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+
+          <tr class="row-group-header"><td colspan="5">商品データ</td></tr>
+          <tr><td>商品ID</td><td class="td-mono">productId</td><td class="center check">✓</td><td class="center dash">—</td><td class="center dash">—</td></tr>
+          <tr><td>商品コード</td><td class="td-mono">productCode</td><td class="center check">✓</td><td class="center dash">—</td><td class="center dash">—</td></tr>
+          <tr><td>ブランド</td><td class="td-mono">brand</td><td class="center check">✓</td><td class="center dash">—</td><td class="center check">✓</td></tr>
+          <tr><td>商品情報</td><td class="td-mono">items</td><td class="center check">✓</td><td class="center dash">—</td><td class="center check">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 03: EMQ Mapping -->
+  <section class="section">
+    <div class="section-number">03</div>
+    <h2>Meta EMQパラメータ充当マッピング</h2>
+    <p class="section-desc">各イベントで取得したデータが、Meta CAPIのどのユーザーマッチングパラメータに充当されるかを示す。sGTM / Stape Cookie Keeperが自動付与する項目を含む。</p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Meta パラメータ</th>
+            <th>重要度</th>
+            <th>充当元</th>
+            <th class="center">① フォームCV</th>
+            <th class="center">② Tailor CV</th>
+            <th class="center">③ tailor_mcv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-group-header"><td colspan="6">dataLayer経由（ユーザーデータ）</td></tr>
+          <tr><td class="td-mono">em</td><td><span class="stars">★★★★★</span></td><td class="td-mono">d1900Email</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+          <tr><td class="td-mono">ph</td><td><span class="stars">★★★★</span></td><td class="td-mono">d1900PhoneNumber</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">fn</td><td><span class="stars">★★★</span></td><td class="td-mono">d1900FirstName</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">ln</td><td><span class="stars">★★★</span></td><td class="td-mono">d1900LastName</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">zp</td><td><span class="stars">★★★</span></td><td class="td-mono">d1900PostalCode</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">ct</td><td><span class="stars">★★</span></td><td class="td-mono">d1900City</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">st</td><td><span class="stars">★★</span></td><td class="td-mono">d1900Region</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+          <tr><td class="td-mono">country</td><td><span class="stars">★</span></td><td class="td-mono">d1900Country</td><td class="center check">✓</td><td class="center check">✓</td><td class="center dash">—</td></tr>
+
+          <tr class="row-group-header"><td colspan="6">sGTM / Stape 自動付与</td></tr>
+          <tr><td class="td-mono">external_id</td><td><span class="stars">★★★</span></td><td class="td-mono">{{stape_cuser_id}}_{{order_id}}</td><td class="center check">✓</td><td class="center check">✓</td><td class="center tri">△</td></tr>
+          <tr><td class="td-mono">fbc</td><td><span class="stars">★★★★</span></td><td>Cookie Keeper 自動</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+          <tr><td class="td-mono">fbp</td><td><span class="stars">★★★★</span></td><td>Cookie Keeper 自動</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+          <tr><td class="td-mono">client_ip</td><td><span class="badge badge-warning">必須</span></td><td>sGTM 自動取得</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+          <tr><td class="td-mono">client_ua</td><td><span class="badge badge-warning">必須</span></td><td>sGTM 自動取得</td><td class="center check">✓</td><td class="center check">✓</td><td class="center check">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 04: Deduplication -->
+  <section class="section">
+    <div class="section-number">04</div>
+    <h2>重複排除設計</h2>
+    <p class="section-desc">フォームCV・Tailor CVが同一注文に対して二重発火しないよう、order_idベースで重複排除を行う。</p>
+    <div class="dedup-box">
+      <div class="dedup-formula">
+        <span class="label">external_id</span>
+        <span class="code">{{stape_cuser_id}}_{{order_id}}</span>
+      </div>
+      <div class="dedup-roles">
+        <div class="dedup-role">
+          <div class="dr-label">stape_cuser_id</div>
+          <div class="dr-name">ユーザー識別</div>
+          <div class="dr-desc">= customerId と同義。同一セッション内でStapeが保持するユーザーID。</div>
+        </div>
+        <div class="dedup-role">
+          <div class="dr-label">order_id</div>
+          <div class="dr-name">注文識別</div>
+          <div class="dr-desc">1注文に対して一意のID。Duplication Keyとして使用。</div>
+        </div>
+      </div>
+      <div class="dedup-key-section">
+        <h4>Duplication Key</h4>
+        <p><code class="dk-code">order_id</code> をduplication_keyとして使用。フォームCV・Tailor CVは同一の event名 <code class="dk-code">cv_1900</code> で発火するため、同一order_idに対しては1購入 = 1CVのみMetaに通知される。これにより現状課題である重複発火を解消し、正確なCPAを計測可能にする。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 05: EMQ Scores -->
+  <section class="section">
+    <div class="section-number">05</div>
+    <h2>EMQ予測スコア</h2>
+    <div class="emq-cards">
+      <div class="emq-card">
+        <div class="ec-label">① フォームCV</div>
+        <div class="ec-score high">8.5–9.5</div>
+        <div class="ec-items">ユーザー9項目 + external_id + fbc/fbp</div>
+      </div>
+      <div class="emq-card">
+        <div class="ec-label">② Tailor CV</div>
+        <div class="ec-score high">8.5–9.5</div>
+        <div class="ec-items">ユーザー9項目 + external_id + fbc/fbp</div>
+      </div>
+      <div class="emq-card">
+        <div class="ec-label">③ tailor_mcv</div>
+        <div class="ec-score mid">4.0–5.5</div>
+        <div class="ec-items">email + fbc/fbp（現状）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 06: Next Actions -->
+  <section class="section">
+    <div class="section-number">06</div>
+    <h2>ネクストアクション</h2>
+    <div class="actions-list">
+
+      <div class="action-item high">
+        <div class="action-header">
+          <span class="action-priority high">最優先</span>
+          <span class="action-title">配信開始 → Purchase EMQ・重複確認</span>
+        </div>
+        <div class="action-body">
+          現行実装で配信を開始し、Meta Events Manager にて Purchase イベントの EMQ スコアと重複発火の有無を実測する。重複排除は <code class="dk-code">order_id</code> ベースの Duplication Key で制御済みのため、設計どおり機能しているかを配信データで検証する。
+        </div>
+        <div class="action-target">目標 → EMQ: 9 ／ 重複: 0</div>
+        <div class="action-reason">
+          <strong>背景：</strong>VIAGE全体の課題は重複発火によりCPAをコントロールし辛いこと。高EMQ経路の早期確立と重複排除の実証が最優先。
+        </div>
+      </div>
+
+      <div class="action-item low">
+        <div class="action-header">
+          <span class="action-priority low">次フェーズ</span>
+          <span class="action-title">tailor_mcv postMessage データ追加</span>
+        </div>
+        <div class="action-body">
+          tailor_mcv（email_entered）の postMessage に氏名・住所データを追加し、MCV単体のEMQを向上させる。
+        </div>
+        <div class="table-wrapper" style="margin-top: 12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Meta パラメータ</th>
+                <th>重要度</th>
+                <th class="center">現状</th>
+                <th class="center">追加後</th>
+                <th>追加データ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="td-mono">em</td><td><span class="stars">★★★★★</span></td><td class="center check">✓</td><td class="center check">✓</td><td class="td-mono">—</td></tr>
+              <tr><td class="td-mono">fn</td><td><span class="stars">★★★</span></td><td class="center dash">—</td><td class="center check">✓</td><td class="td-mono">{{first_name}}</td></tr>
+              <tr><td class="td-mono">ln</td><td><span class="stars">★★★</span></td><td class="center dash">—</td><td class="center check">✓</td><td class="td-mono">{{last_name}}</td></tr>
+              <tr><td class="td-mono">zp</td><td><span class="stars">★★★</span></td><td class="center dash">—</td><td class="center check">✓</td><td class="td-mono">{{zip01}}{{zip02}}</td></tr>
+              <tr><td class="td-mono">ct</td><td><span class="stars">★★</span></td><td class="center dash">—</td><td class="center check">✓</td><td class="td-mono">{{addr01}}</td></tr>
+              <tr><td class="td-mono">st</td><td><span class="stars">★★</span></td><td class="center dash">—</td><td class="center check">✓</td><td class="td-mono">{{pref}}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <div class="emq-card" style="flex:1; border: 1px solid var(--border);">
+            <div class="ec-label">現状 EMQ</div>
+            <div class="ec-score mid" style="font-size: 22px;">4.0–5.5</div>
+            <div class="ec-items">emailのみ</div>
+          </div>
+          <div style="display: flex; align-items: center; font-size: 20px; color: var(--text-muted);">→</div>
+          <div class="emq-card" style="flex:1; border: 1px solid var(--border);">
+            <div class="ec-label">追加後 EMQ</div>
+            <div class="ec-score high" style="font-size: 22px;">7.0–8.0</div>
+            <div class="ec-items">email + 名前 + 住所5項目</div>
+          </div>
+        </div>
+        <div class="action-reason">
+          <strong>優先度が低い理由：</strong>email_enteredはファネル途中のMCVであり、同一ユーザーがTailor CVに到達すれば、Metaがイベントをマージしてユーザープロファイルを補完する。MCVは単独のEMQで評価すべきものではなく、ファネル全体でマッチング精度に悪影響はない。<br>
+          <strong>追加の効果：</strong>email_enteredのみで離脱するユーザーの特定精度が向上する。CVに至らないユーザーに対するリターゲティング・Lookalike拡張の質が改善するが、効果は副次的。
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="footnote">
+    実装環境：Stape sGTM ／ Cookie Keeper Power-up ／ Stape Store reStore<br>
+    fbc・fbp・client_ip・client_user_agent はsGTM側で自動付与。dataLayerからの明示的送信は不要。
+  </div>
+
+</div>
+</body>
+</html>
