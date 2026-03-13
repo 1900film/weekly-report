@@ -1,1942 +1,1428 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LUTEIN ルテイン 分析ダッシュボード</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUTEIN Red Team Review | 3月後半戦略レビュー</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Inter:wght@400;600;700;900&display=swap');
+
   :root {
-    --ch1-color: #6366F1; --ch1-light: #E0E7FF; --ch1-dark: #4338CA;
-    --ch1-gradient: linear-gradient(135deg, #E0E7FF 0%, rgba(224,231,255,0) 80%);
-    --ch2-color: #0668E1; --ch2-light: #DBEAFE; --ch2-dark: #1E40AF;
-    --ch2-gradient: linear-gradient(135deg, #DBEAFE 0%, rgba(219,234,254,0) 80%);
-    --ch3-color: #34A853; --ch3-light: #D1FAE5; --ch3-dark: #065F46;
-    --ch3-gradient: linear-gradient(135deg, #D1FAE5 0%, rgba(209,250,229,0) 80%);
-    --ch4-color: #F59E0B; --ch4-light: #FEF3C7; --ch4-dark: #B45309;
-    --ch4-gradient: linear-gradient(135deg, #FEF3C7 0%, rgba(254,243,199,0) 80%);
-    --ch5-color: #EC4899; --ch5-light: #FCE7F3; --ch5-dark: #9D174D;
-    --ch5-gradient: linear-gradient(135deg, #FCE7F3 0%, rgba(252,231,243,0) 80%);
-    --bg-warm-white: #FFF8F0; --text-dark-navy: #1E293B; --text-sub: #64748B;
-    --border-light: #E2E8F0;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08); --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12); --shadow-hover: 0 12px 36px rgba(0,0,0,0.16);
-    --note-important-bg: #FFF7ED; --note-critical-bg: #FEF2F2;
-    --font-sans: 'Noto Sans JP', sans-serif; --font-serif: 'Noto Serif JP', serif;
-    --font-code: 'Fira Code', monospace;
-    --container-max: 1200px; --section-padding: 4rem 2rem; --transition-base: 0.3s ease;
-    --color-coral: #EF4444; --color-orange: #F97316; --color-green-self: #22C55E; --color-gray: #94A3B8;
+    --bg-dark: #0F172A;
+    --bg-card: #1E293B;
+    --bg-card-hover: #273549;
+    --accent-red: #EF4444;
+    --accent-coral: #F97316;
+    --accent-blue: #3B82F6;
+    --accent-emerald: #10B981;
+    --accent-purple: #8B5CF6;
+    --accent-amber: #F59E0B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --border: #334155;
   }
-  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth;font-size:16px}
-  body{font-family:var(--font-sans);font-weight:400;font-size:1rem;line-height:1.8;color:var(--text-dark-navy);background:var(--bg-warm-white);-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  h1,h2,h3,h4{line-height:1.4}
-  h1{font-weight:900;font-size:2.5rem} h2{font-weight:700;font-size:2rem}
-  h3{font-weight:700;font-size:1.5rem} h4{font-weight:700;font-size:1.25rem}
-  .container{max-width:var(--container-max);margin:0 auto;padding:0 2rem}
-  .main-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,248,240,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-light);transition:box-shadow var(--transition-base)}
-  .main-nav.scrolled{box-shadow:var(--shadow-md)}
-  .main-nav__inner{max-width:var(--container-max);margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
-  .main-nav__logo{font-weight:900;font-size:1rem;color:var(--text-dark-navy);white-space:nowrap}
-  .main-nav__links{display:flex;gap:0.25rem;list-style:none}
-  .main-nav__link{display:block;padding:0.5rem 0.75rem;font-size:0.85rem;font-weight:700;color:var(--text-sub);border-radius:8px;transition:all var(--transition-base);white-space:nowrap}
-  .main-nav__link:hover{color:var(--text-dark-navy);background:rgba(0,0,0,0.04)}
-  .main-nav__link.active{color:var(--text-dark-navy);background:rgba(0,0,0,0.06)}
-  .main-nav__link[data-chapter="1"].active{color:var(--ch1-color)}
-  .main-nav__link[data-chapter="2"].active{color:var(--ch2-color)}
-  .main-nav__link[data-chapter="3"].active{color:var(--ch3-color)}
-  .main-nav__link[data-chapter="4"].active{color:var(--ch4-color)}
-  .main-nav__link[data-chapter="5"].active{color:var(--ch5-color)}
-  .main-nav__hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:32px;height:32px;cursor:pointer;background:none;border:none;padding:4px}
-  .main-nav__hamburger span{display:block;width:24px;height:2px;background:var(--text-dark-navy);border-radius:2px;transition:all var(--transition-base)}
-  .main-nav__hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
-  .main-nav__hamburger.open span:nth-child(2){opacity:0}
-  .main-nav__hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-  .cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem;background:linear-gradient(180deg,#FFF8F0 0%,#FDE8D0 50%,#FFF8F0 100%);position:relative;overflow:hidden}
-  .cover::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(99,102,241,0.06) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(6,104,225,0.06) 0%,transparent 50%),radial-gradient(circle at 50% 80%,rgba(245,158,11,0.06) 0%,transparent 50%);animation:coverFloat 20s ease-in-out infinite}
-  @keyframes coverFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-2%,-1%)}}
-  .cover__badge{position:relative;z-index:1;display:inline-block;padding:0.4rem 1.2rem;background:rgba(255,255,255,0.8);border:1px solid var(--border-light);border-radius:999px;font-size:0.8rem;font-weight:700;color:var(--text-sub);margin-bottom:1.5rem;letter-spacing:0.05em}
-  .cover__title{position:relative;z-index:1;font-size:3rem;font-weight:900;line-height:1.3;margin-bottom:0.75rem;background:linear-gradient(135deg,var(--ch1-color),var(--ch2-color),var(--ch4-color));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .cover__subtitle{position:relative;z-index:1;font-size:1.2rem;color:var(--text-sub);margin-bottom:1rem;font-weight:400;font-family:var(--font-serif)}
-  .cover__date{position:relative;z-index:1;font-size:0.95rem;color:var(--text-sub);font-family:var(--font-code);margin-bottom:2.5rem}
-  .cover__scroll-hint{position:relative;z-index:1;margin-top:3rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;color:var(--text-sub);font-size:0.8rem;animation:scrollHint 2s ease-in-out infinite}
-  .cover__scroll-hint span{display:block;width:20px;height:32px;border:2px solid var(--text-sub);border-radius:10px;position:relative}
-  .cover__scroll-hint span::after{content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);width:3px;height:6px;background:var(--text-sub);border-radius:3px;animation:scrollDot 2s ease-in-out infinite}
-  @keyframes scrollHint{0%,100%{opacity:1}50%{opacity:0.5}}
-  @keyframes scrollDot{0%{top:6px;opacity:1}100%{top:18px;opacity:0}}
-  .chapter{position:relative}
-  .chapter-body{padding:var(--section-padding)}
-  .chapter-header{width:100%;min-height:30vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden}
-  [data-chapter="1"] .chapter-header{background:var(--ch1-gradient)}
-  [data-chapter="2"] .chapter-header{background:var(--ch2-gradient)}
-  [data-chapter="3"] .chapter-header{background:var(--ch3-gradient)}
-  [data-chapter="4"] .chapter-header{background:var(--ch4-gradient)}
-  [data-chapter="5"] .chapter-header{background:var(--ch5-gradient)}
-  .chapter-header__number{display:inline-block;font-size:1rem;font-weight:700;letter-spacing:0.1em;padding:0.3rem 1rem;border-radius:999px;margin-bottom:1rem;background:rgba(255,255,255,0.6)}
-  [data-chapter="1"] .chapter-header__number{color:var(--ch1-dark);border:2px solid var(--ch1-color)}
-  [data-chapter="2"] .chapter-header__number{color:var(--ch2-dark);border:2px solid var(--ch2-color)}
-  [data-chapter="3"] .chapter-header__number{color:var(--ch3-dark);border:2px solid var(--ch3-color)}
-  [data-chapter="4"] .chapter-header__number{color:var(--ch4-dark);border:2px solid var(--ch4-color)}
-  [data-chapter="5"] .chapter-header__number{color:var(--ch5-dark);border:2px solid var(--ch5-color)}
-  .chapter-header__title{font-size:2.5rem;font-weight:900;margin-bottom:0.5rem}
-  [data-chapter="1"] .chapter-header__title{color:var(--ch1-dark)}
-  [data-chapter="2"] .chapter-header__title{color:var(--ch2-dark)}
-  [data-chapter="3"] .chapter-header__title{color:var(--ch3-dark)}
-  [data-chapter="4"] .chapter-header__title{color:var(--ch4-dark)}
-  [data-chapter="5"] .chapter-header__title{color:var(--ch5-dark)}
-  .chapter-header__subtitle{font-size:1.1rem;color:var(--text-sub);font-family:var(--font-serif)}
-  .section-heading{margin:3rem 0 1.5rem;padding-bottom:0.5rem;border-bottom:2px solid var(--border-light);display:flex;align-items:center;gap:0.75rem}
-  .section-heading__badge{display:inline-flex;align-items:center;justify-content:center;padding:0.2rem 0.75rem;border-radius:6px;font-size:0.75rem;font-weight:700;color:#FFF;flex-shrink:0}
-  [data-chapter="1"] .section-heading__badge{background:var(--ch1-color)}
-  [data-chapter="2"] .section-heading__badge{background:var(--ch2-color)}
-  [data-chapter="3"] .section-heading__badge{background:var(--ch3-color)}
-  [data-chapter="4"] .section-heading__badge{background:var(--ch4-color)}
-  [data-chapter="5"] .section-heading__badge{background:var(--ch5-color)}
-  .hero-stat-row{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin:2.5rem 0}
-  .hero-stat{text-align:center;padding:2rem 1.5rem;background:#FFF;border-radius:16px;box-shadow:var(--shadow-sm);transition:all var(--transition-base);min-width:160px;flex:1;max-width:260px;position:relative;overflow:hidden}
-  .hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
-  .hero-stat:hover{box-shadow:var(--shadow-hover);transform:translateY(-4px)}
-  .hero-stat__value{font-size:3.5rem;font-weight:900;line-height:1;letter-spacing:-0.02em}
-  .hero-stat__label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-sub);margin-top:0.5rem;display:block}
-  .hero-stat__sub{font-size:0.8rem;color:var(--text-sub);margin-top:0.25rem;font-family:var(--font-serif);display:block}
-  [data-chapter="1"] .hero-stat::before{background:var(--ch1-color)}
-  [data-chapter="1"] .hero-stat__value{color:var(--ch1-color)}
-  .animate-on-scroll{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease}
-  .animate-on-scroll.visible{opacity:1;transform:translateY(0)}
-  .chapter-transition{text-align:center;padding:3rem 2rem}
-  .chapter-transition__arrow{font-size:2rem;display:block;margin-bottom:0.75rem;animation:transitionBounce 2s ease-in-out infinite}
-  @keyframes transitionBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
-  .chapter-transition__text{font-family:var(--font-serif);font-size:1rem;color:var(--text-sub)}
-  .chapter-transition__divider{width:80px;height:2px;background:var(--border-light);margin:1.5rem auto 0}
-  .hbar-chart{display:flex;flex-direction:column;gap:0.75rem;margin:1.5rem 0}
-  .hbar-row{display:flex;align-items:center;gap:0.75rem}
-  .hbar-label{font-size:0.8rem;font-weight:700;min-width:80px;text-align:right;flex-shrink:0;color:var(--text-dark-navy)}
-  .hbar-track{flex:1;height:32px;background:#F1F5F9;border-radius:8px;overflow:hidden;position:relative}
-  .hbar-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:0.75rem;transition:width 1.2s cubic-bezier(0.25,0.46,0.45,0.94);width:0;font-size:0.75rem;font-weight:700;color:#FFF;white-space:nowrap}
-  .hbar-fill--blue{background:linear-gradient(90deg,#60A5FA,var(--ch2-color))}
-  .hbar-fill--peak{background:linear-gradient(90deg,#60A5FA,var(--ch2-color));box-shadow:0 0 12px rgba(6,104,225,0.3)}
-  .hbar-fill--projected{background:repeating-linear-gradient(45deg,#93C5FD,#93C5FD 4px,#BFDBFE 4px,#BFDBFE 8px)}
-  .hbar-fill--green{background:linear-gradient(90deg,#6EE7B7,var(--ch3-color))}
-  .hbar-fill--coral{background:linear-gradient(90deg,#FCA5A5,var(--color-coral))}
-  .hbar-fill--orange{background:linear-gradient(90deg,#FDBA74,var(--color-orange))}
-  .hbar-fill--gray{background:linear-gradient(90deg,#CBD5E1,var(--color-gray))}
-  .hbar-meta{font-size:0.75rem;color:var(--text-sub);min-width:70px;text-align:left;flex-shrink:0}
-  .hbar-meta--up{color:var(--ch3-color);font-weight:700}
-  .hbar-meta--down{color:var(--color-coral);font-weight:700}
-  .hbar-meta--peak{color:var(--ch2-color);font-weight:700}
-  .vbar-chart{display:flex;align-items:flex-end;gap:6px;margin:1.5rem 0;padding:0 0.5rem;height:200px}
-  .vbar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
-  .vbar-fill{width:100%;border-radius:6px 6px 0 0;transition:height 1s cubic-bezier(0.25,0.46,0.45,0.94);height:0;display:flex;align-items:flex-start;justify-content:center;padding-top:4px;font-size:0.7rem;font-weight:700;color:#FFF}
-  .vbar-fill--w1{background:linear-gradient(180deg,#93C5FD,#60A5FA)}
-  .vbar-fill--w2{background:linear-gradient(180deg,#3B82F6,var(--ch2-dark))}
-  .vbar-label{font-size:0.6rem;color:var(--text-sub);font-weight:700;white-space:nowrap}
-  .donut-container{display:flex;align-items:center;gap:2.5rem;margin:2rem 0;flex-wrap:wrap;justify-content:center}
-  .donut{width:220px;height:220px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
-  .donut-center{width:120px;height:120px;border-radius:50%;background:#FFF;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);z-index:1}
-  .donut-center__value{font-size:1.5rem;font-weight:900;color:var(--text-dark-navy)}
-  .donut-center__label{font-size:0.65rem;color:var(--text-sub);font-weight:700}
-  .donut-legend{display:flex;flex-direction:column;gap:0.75rem}
-  .donut-legend__item{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem}
-  .donut-legend__color{width:14px;height:14px;border-radius:4px;flex-shrink:0}
-  .donut-legend__label{font-weight:700}
-  .donut-legend__value{color:var(--text-sub);font-family:var(--font-code);font-size:0.8rem}
-  .insight-card{background:var(--note-important-bg);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;display:flex;align-items:flex-start;gap:0.75rem}
-  .insight-card__icon{font-size:1.5rem;flex-shrink:0}
-  .insight-card__text{font-size:0.9rem;font-weight:700;color:var(--ch4-dark);line-height:1.6}
-  .data-table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.85rem}
-  .data-table thead th{background:var(--text-dark-navy);color:#FFF;padding:0.6rem 0.75rem;font-weight:700;text-align:left;font-size:0.75rem;letter-spacing:0.05em}
-  .data-table thead th:first-child{border-radius:8px 0 0 0}
-  .data-table thead th:last-child{border-radius:0 8px 0 0}
-  .data-table tbody td{padding:0.6rem 0.75rem;border-bottom:1px solid var(--border-light);font-family:var(--font-code);font-size:0.8rem}
-  .data-table tbody tr:hover{background:rgba(0,0,0,0.02)}
-  .data-table tbody tr:last-child td{border-bottom:none}
-  .text-center{text-align:center} .font-bold{font-weight:700}
-  .text-green{color:var(--ch3-color)} .text-red{color:var(--color-coral)}
-  .perf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin:1.5rem 0}
-  .perf-card{background:#FFF;border-radius:14px;padding:1.5rem;box-shadow:var(--shadow-sm);transition:all var(--transition-base);text-align:center;position:relative;overflow:hidden}
-  .perf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:14px 14px 0 0}
-  .perf-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-  .perf-card--coral::before{background:var(--color-coral)}
-  .perf-card--orange::before{background:var(--color-orange)}
-  .perf-card__title{font-size:0.85rem;font-weight:900;color:var(--text-dark-navy);margin-bottom:0.75rem}
-  .perf-card__row{display:flex;justify-content:space-around;margin-top:0.5rem}
-  .perf-card__stat{text-align:center}
-  .perf-card__stat-value{font-size:1.5rem;font-weight:900;color:var(--text-dark-navy)}
-  .perf-card__stat-label{font-size:0.7rem;color:var(--text-sub);font-weight:700}
-  .serp-table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.8rem}
-  .serp-table thead th{background:var(--text-dark-navy);color:#FFF;padding:0.5rem 0.6rem;font-weight:700;font-size:0.7rem;text-align:center}
-  .serp-table thead th:first-child{text-align:left;border-radius:8px 0 0 0}
-  .serp-table thead th:last-child{border-radius:0 8px 0 0}
-  .serp-table tbody td{padding:0.5rem 0.6rem;border-bottom:1px solid var(--border-light);text-align:center;font-family:var(--font-code);font-size:0.75rem}
-  .serp-table tbody td:first-child{text-align:left;font-family:var(--font-sans);font-size:0.75rem;font-weight:500}
-  .serp-table tbody tr:hover{background:rgba(0,0,0,0.02)}
-  .serp-cell--1{background:rgba(245,158,11,0.15);font-weight:900;color:var(--ch4-dark)}
-  .serp-cell--2{background:rgba(6,104,225,0.08);font-weight:700;color:var(--ch2-dark)}
-  .serp-cell--3{background:rgba(34,168,83,0.08);font-weight:700;color:var(--ch3-dark)}
-  .serp-cell--4{background:rgba(100,116,139,0.06);color:var(--text-sub)}
-  .serp-cell--5{background:rgba(100,116,139,0.04);color:var(--text-sub)}
-  .serp-cell--empty{color:#CBD5E1}
-  .priority-list{display:flex;flex-direction:column;gap:0.75rem;margin:1.5rem 0}
-  .priority-card{display:flex;align-items:flex-start;gap:1rem;background:#FFF;border-radius:12px;padding:1rem 1.25rem;box-shadow:var(--shadow-sm);transition:all var(--transition-base);border-left:4px solid var(--ch4-color)}
-  .priority-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-  .priority-card__rank{font-size:1.75rem;font-weight:900;color:var(--ch4-color);flex-shrink:0;min-width:36px;text-align:center;line-height:1}
-  .priority-card__content{flex:1}
-  .priority-card__kw{font-size:0.9rem;font-weight:900;color:var(--text-dark-navy);margin-bottom:0.25rem}
-  .priority-card__status{font-size:0.75rem;color:var(--color-coral);font-weight:700;font-family:var(--font-code)}
-  .priority-card__reason{font-size:0.8rem;color:var(--text-sub);margin-top:0.15rem;line-height:1.4}
-  .action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin:2rem 0}
-  .action-card{background:#FFF;border-radius:14px;padding:1.75rem;box-shadow:var(--shadow-sm);transition:all var(--transition-base);position:relative;overflow:hidden}
-  .action-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--ch4-color);border-radius:14px 14px 0 0}
-  .action-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
-  .action-card__number{font-size:2rem;font-weight:900;color:var(--ch4-color);line-height:1;margin-bottom:0.5rem}
-  .action-card__title{font-size:1rem;font-weight:900;color:var(--text-dark-navy);margin-bottom:0.5rem}
-  .action-card__desc{font-size:0.85rem;color:var(--text-sub);line-height:1.6}
-  .week-compare{display:flex;justify-content:center;gap:2rem;margin:1.5rem 0;flex-wrap:wrap}
-  .week-compare__card{background:#FFF;border-radius:12px;padding:1.25rem 2rem;text-align:center;box-shadow:var(--shadow-sm);min-width:140px;transition:all var(--transition-base)}
-  .week-compare__card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-  .week-compare__label{font-size:0.75rem;font-weight:700;color:var(--text-sub)}
-  .week-compare__value{font-size:2rem;font-weight:900;color:var(--ch2-color)}
-  .week-compare__card--delta .week-compare__value{color:var(--color-coral)}
-  .trend-annotation{display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:var(--note-critical-bg);border:1px solid rgba(239,68,68,0.15);border-radius:8px;margin-top:1rem;font-size:0.85rem;font-weight:700;color:#991B1B}
-  .callout-banner{width:100%;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:center;gap:1rem;text-align:center;position:relative;overflow:hidden}
-  .callout-banner__icon{font-size:2rem;flex-shrink:0;line-height:1}
-  .callout-banner__content{text-align:left}
-  .callout-banner__message{font-size:1.1rem;font-weight:900;line-height:1.4}
-  .side-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin:1.5rem 0}
-  .pipeline-node.animate-stagger{opacity:0;transform:translateY(20px) scale(0.95);transition:opacity 0.4s ease,transform 0.4s ease}
-  .pipeline-node.animate-stagger.visible{opacity:1;transform:translateY(0) scale(1)}
-  .visual-pipeline{display:flex;align-items:center;justify-content:center;gap:0;margin:2.5rem 0;padding:1.5rem 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .pipeline-node{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0.75rem 1rem;background:#FFF;border-radius:14px;box-shadow:var(--shadow-sm);min-width:90px;max-width:140px;position:relative;transition:all var(--transition-base);flex-shrink:0;border:2px solid transparent;z-index:1}
-  .pipeline-node:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
-  .pipeline-node__icon{font-size:1.6rem;margin-bottom:0.3rem;display:block;line-height:1}
-  .pipeline-node__label{font-size:0.7rem;font-weight:700;color:var(--text-dark-navy);line-height:1.3}
-  .pipeline-node__sub{font-size:0.6rem;color:var(--text-sub);margin-top:0.15rem;line-height:1.3}
-  [data-chapter="1"] .pipeline-node{border-color:var(--ch1-light)}
-  .pipeline-node--highlight{border-color:var(--color-green-self) !important;box-shadow:var(--shadow-md),0 0 0 3px rgba(34,197,94,0.1)}
-  .pipeline-connector{display:flex;align-items:center;position:relative;width:28px;height:2px;flex-shrink:0}
-  .pipeline-connector__line{width:100%;height:0;border-top:2px dashed #CBD5E1;position:relative}
-  .pipeline-connector__line::after{content:'';position:absolute;right:-6px;top:-5px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #CBD5E1}
-  .pipeline-connector__line::before{content:'';position:absolute;top:-4px;left:0;width:6px;height:6px;border-radius:50%;background:var(--ch1-color);animation:pipelineDotFlow 2s ease-in-out infinite}
-  @keyframes pipelineDotFlow{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 6px);opacity:0}}
-  .pipeline-branch{display:flex;flex-direction:column;align-items:center;gap:0.4rem}
-  .pipeline-branch-connector{width:2px;height:12px;border-left:2px dashed #CBD5E1}
-  /* Heatmap styles (CH5) */
-  .heatmap-tabs{display:flex;gap:0;margin:2rem 0 0;border-bottom:2px solid var(--border-light)}
-  .heatmap-tab{padding:0.75rem 1.5rem;font-size:0.9rem;font-weight:700;cursor:pointer;border:none;background:none;color:var(--text-sub);border-bottom:3px solid transparent;transition:all var(--transition-base)}
-  .heatmap-tab.active{color:var(--ch5-color);border-bottom-color:var(--ch5-color)}
-  .heatmap-tab:hover{color:var(--ch5-dark)}
-  .heatmap-panel{display:none;padding:1.5rem 0}
-  .heatmap-panel.active{display:block}
-  .heatmap-view-toggle{display:flex;gap:0.5rem;margin:1rem 0}
-  .heatmap-view-btn{padding:0.4rem 1rem;font-size:0.8rem;font-weight:700;border:2px solid var(--border-light);border-radius:8px;background:#FFF;cursor:pointer;transition:all var(--transition-base);color:var(--text-sub)}
-  .heatmap-view-btn.active-total{border-color:#F59E0B;color:#B45309;background:#FEF3C7}
-  .heatmap-view-btn.active-1900{border-color:#0D9488;color:#0F766E;background:#CCFBF1}
-  .heatmap-grid{display:grid;gap:2px;margin:1rem 0}
-  .heatmap-grid--weekday{grid-template-columns:48px repeat(24,1fr)}
-  .heatmap-grid--weekend{grid-template-columns:48px repeat(24,1fr)}
-  .heatmap-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;border-radius:4px;transition:all 0.2s;cursor:default;position:relative}
-  .heatmap-cell:hover{transform:scale(1.15);z-index:2;box-shadow:var(--shadow-md)}
-  .heatmap-cell--header{background:none;font-size:0.6rem;color:var(--text-sub);font-weight:700;aspect-ratio:auto}
-  .heatmap-cell--dow{background:none;font-size:0.75rem;color:var(--text-dark-navy);font-weight:900;aspect-ratio:auto;justify-content:flex-end;padding-right:8px}
-  .heatmap-legend{display:flex;align-items:center;gap:0.5rem;margin:1rem 0;font-size:0.75rem;color:var(--text-sub)}
-  .heatmap-legend__bar{width:120px;height:12px;border-radius:6px}
-  .heatmap-legend__bar--amber{background:linear-gradient(90deg,#FFF7ED,#F59E0B,#B45309)}
-  .heatmap-legend__bar--teal{background:linear-gradient(90deg,#F0FDFA,#14B8A6,#0F766E)}
-  .zone-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.5rem 0}
-  .zone-card{background:#FFF;border-radius:12px;padding:1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid;transition:all var(--transition-base)}
-  .zone-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-  .zone-card--A{border-left-color:#EF4444}
-  .zone-card--B{border-left-color:#F59E0B}
-  .zone-card--C{border-left-color:#6366F1}
-  .zone-card--D{border-left-color:#94A3B8}
-  .zone-card__header{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem}
-  .zone-card__badge{font-size:0.75rem;font-weight:900;padding:0.15rem 0.5rem;border-radius:4px;color:#FFF}
-  .zone-card__badge--A{background:#EF4444}
-  .zone-card__badge--B{background:#F59E0B}
-  .zone-card__badge--C{background:#6366F1}
-  .zone-card__badge--D{background:#94A3B8}
-  .zone-card__title{font-size:0.85rem;font-weight:700;color:var(--text-dark-navy)}
-  .zone-card__detail{font-size:0.8rem;color:var(--text-sub);line-height:1.5}
-  .zone-card__stat{font-family:var(--font-code);font-weight:700;color:var(--text-dark-navy)}
-  .cpa-bar-chart{display:flex;align-items:flex-end;gap:3px;height:180px;margin:1.5rem 0;padding:0 0.25rem}
-  .cpa-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}
-  .cpa-bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height 1s cubic-bezier(0.25,0.46,0.45,0.94);display:flex;align-items:flex-start;justify-content:center;padding-top:2px;font-size:0.55rem;font-weight:700;color:#FFF;min-height:0}
-  .cpa-bar-fill--green{background:linear-gradient(180deg,#6EE7B7,#059669)}
-  .cpa-bar-fill--yellow{background:linear-gradient(180deg,#FDE68A,#D97706)}
-  .cpa-bar-fill--red{background:linear-gradient(180deg,#FCA5A5,#DC2626)}
-  .cpa-bar-label{font-size:0.6rem;color:var(--text-sub);font-weight:700}
-  .cpa-legend{display:flex;gap:1rem;margin:0.5rem 0;font-size:0.75rem;align-items:center;justify-content:center}
-  .cpa-legend__item{display:flex;align-items:center;gap:0.3rem}
-  .cpa-legend__dot{width:10px;height:10px;border-radius:3px}
-  .production-notes{text-align:center;padding:3rem 2rem;background:var(--text-dark-navy);color:rgba(255,255,255,0.6);font-size:0.85rem}
-  .production-notes__logo{font-weight:900;font-size:1rem;color:rgba(255,255,255,0.9);margin-bottom:0.5rem}
-  .production-notes__item{margin-top:0.4rem}
-  @media(max-width:768px){
-    html{font-size:15px} h1{font-size:2rem} h2{font-size:1.6rem} h3{font-size:1.3rem}
-    .cover{padding:5rem 1.5rem 3rem} .cover__title{font-size:2rem} .cover__subtitle{font-size:1rem}
-    .main-nav__hamburger{display:flex}
-    .main-nav__links{display:none;position:absolute;top:60px;left:0;right:0;flex-direction:column;background:rgba(255,248,240,0.98);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border-light);padding:0.5rem;box-shadow:var(--shadow-md)}
-    .main-nav__links.open{display:flex} .main-nav__link{padding:0.75rem 1rem}
-    .chapter-header{min-height:25vh;padding:3rem 1.5rem} .chapter-header__title{font-size:1.8rem}
-    .container{padding:0 1.25rem} .chapter-body{padding:2.5rem 1.25rem}
-    .hero-stat-row{flex-direction:column;align-items:center;gap:1rem}
-    .hero-stat{max-width:100%;width:100%} .hero-stat__value{font-size:2.5rem}
-    .visual-pipeline{flex-direction:column;align-items:center;overflow-x:visible;padding:1rem 0}
-    .pipeline-node{min-width:200px;max-width:280px;width:100%}
-    .pipeline-connector{width:2px;height:32px;flex-direction:column}
-    .pipeline-connector__line{width:0;height:100%;border-top:none;border-left:2px dashed #CBD5E1}
-    .pipeline-connector__line::after{right:auto;top:auto;bottom:-6px;left:-5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #CBD5E1;border-bottom:none}
-    .perf-grid{grid-template-columns:1fr}
-    .action-grid{grid-template-columns:1fr} .side-tables{grid-template-columns:1fr}
-    .donut-container{flex-direction:column} .vbar-chart{height:160px;gap:3px}
-    .serp-table{font-size:0.7rem} .serp-table thead th,.serp-table tbody td{padding:0.4rem 0.3rem}
-    .heatmap-grid{overflow-x:auto} .heatmap-cell{font-size:0.5rem}
-    .zone-grid{grid-template-columns:1fr} .cpa-bar-chart{height:140px}
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.7;
   }
-  @media(max-width:480px){
-    .hero-stat__value{font-size:2rem} .pipeline-node{min-width:160px}
-    .vbar-chart{height:130px} .priority-card{flex-direction:column;gap:0.5rem}
-    .week-compare{flex-direction:column;align-items:center}
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
   }
-  @media print{
-    .main-nav{display:none} .animate-on-scroll{opacity:1;transform:none}
-    .pipeline-connector__line::before{display:none}
-    .hbar-fill,.vbar-fill{transition:none} .cover{min-height:auto} body{background:#FFF}
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(239,68,68,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 30%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(2%, -1%) rotate(1deg); }
+    66% { transform: translate(-1%, 1%) rotate(-1deg); }
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--accent-red);
+    padding: 0.4rem 1.2rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.8s ease;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.8s ease 0.2s both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    max-width: 650px;
+    margin: 0 auto 2.5rem;
+    animation: fadeInUp 0.8s ease 0.4s both;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.6s both;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat .value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .hero-stat .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .scroll-indicator::after {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--text-muted), transparent);
+    margin: 0.5rem auto 0;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 0.75rem;
+  }
+
+  .section h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 700px;
+    margin-bottom: 2rem;
+  }
+
+  /* ===== BLIND SPOT REVEAL ===== */
+  .blindspot {
+    background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02));
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 24px;
+    padding: 3rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .blindspot::before {
+    content: '!';
+    position: absolute;
+    top: -30px;
+    right: -10px;
+    font-size: 200px;
+    font-weight: 900;
+    color: rgba(239,68,68,0.04);
+    font-family: 'Inter', sans-serif;
+    line-height: 1;
+  }
+
+  .blindspot-tag {
+    display: inline-block;
+    background: var(--accent-red);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .blindspot h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+  }
+
+  .blindspot p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+
+  .zero-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-red);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 1.5rem 0;
+    box-shadow: 0 0 60px rgba(239,68,68,0.3);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 60px rgba(239,68,68,0.4); }
+  }
+
+  /* ===== IS COMPARISON ===== */
+  .is-compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin: 2rem 0;
+  }
+
+  .is-box {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .is-box.wrong {
+    border: 2px solid rgba(239,68,68,0.3);
+    opacity: 0.6;
+    position: relative;
+  }
+
+  .is-box.wrong::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 45%, rgba(239,68,68,0.3) 45%, rgba(239,68,68,0.3) 55%, transparent 55%);
+    border-radius: 16px;
+    pointer-events: none;
+  }
+
+  .is-box.correct {
+    border: 2px solid rgba(16,185,129,0.4);
+  }
+
+  .is-box h4 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .is-box .metric {
+    font-size: 2rem;
+    font-weight: 900;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .is-box .detail {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+
+  .is-arrow {
+    font-size: 2rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== VERDICT CARDS ===== */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .verdict-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+  }
+
+  .verdict-card .strategy-name {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .verdict-card h3 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin: 0.3rem 0 1rem;
+  }
+
+  .verdict-badge {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .verdict-badge.revise {
+    background: rgba(239,68,68,0.15);
+    color: var(--accent-red);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+
+  .verdict-badge.conditional {
+    background: rgba(245,158,11,0.15);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245,158,11,0.3);
+  }
+
+  .verdict-badge.go {
+    background: rgba(16,185,129,0.15);
+    color: var(--accent-emerald);
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  .verdict-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .verdict-metric {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+  }
+
+  .verdict-metric .vm-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .verdict-metric .vm-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .critique-list {
+    list-style: none;
+    margin-top: 1rem;
+  }
+
+  .critique-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .critique-list li:last-child { border-bottom: none; }
+
+  .critique-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .critique-list li.fatal::before { background: var(--accent-red); }
+  .critique-list li.major::before { background: var(--accent-coral); }
+  .critique-list li.minor::before { background: var(--accent-amber); }
+
+  /* ===== WATERFALL CHART ===== */
+  .waterfall {
+    margin: 2rem 0;
+  }
+
+  .wf-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 80px;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .wf-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .wf-bar-container {
+    height: 28px;
+    position: relative;
+  }
+
+  .wf-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    min-width: 40px;
+    transition: width 1s ease;
+  }
+
+  .wf-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: right;
+    color: var(--text-primary);
+  }
+
+  /* ===== HYBRID PLAN ===== */
+  .phase-timeline {
+    position: relative;
+    padding-left: 3rem;
+    margin: 2rem 0;
+  }
+
+  .phase-timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent-red), var(--accent-coral), var(--accent-amber), var(--accent-emerald));
+  }
+
+  .phase-item {
+    position: relative;
+    margin-bottom: 2rem;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border);
+  }
+
+  .phase-item::before {
+    content: '';
+    position: absolute;
+    left: -2.35rem;
+    top: 1.8rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid var(--bg-dark);
+  }
+
+  .phase-item:nth-child(1)::before { background: var(--accent-red); }
+  .phase-item:nth-child(2)::before { background: var(--accent-coral); }
+  .phase-item:nth-child(3)::before { background: var(--accent-amber); }
+  .phase-item:nth-child(4)::before { background: var(--accent-emerald); }
+
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .phase-name {
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
+
+  .phase-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .phase-kpis {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+
+  .phase-kpi {
+    text-align: center;
+  }
+
+  .phase-kpi .pk-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+  }
+
+  .phase-kpi .pk-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .action-list {
+    list-style: none;
+    margin-top: 0.75rem;
+  }
+
+  .action-list li {
+    padding: 0.4rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .action-list li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ===== SCENARIO TABLE ===== */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .scenario-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .scenario-card.highlight {
+    border-color: var(--accent-blue);
+    background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(59,130,246,0.02));
+  }
+
+  .scenario-card h4 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .scenario-card .sc-cv {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+  }
+
+  .scenario-card .sc-cpa {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+  }
+
+  .scenario-card .sc-prob {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+  }
+
+  /* ===== HONEST BOX ===== */
+  .honest-box {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02));
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin: 3rem 0;
+    text-align: center;
+  }
+
+  .honest-box h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: var(--accent-purple);
+  }
+
+  .honest-box .big-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .honest-box .big-label {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .honest-box .explanation {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 600px;
+    margin: 1.5rem auto 0;
+    line-height: 1.8;
+  }
+
+  /* ===== PRIORITY CHOICE ===== */
+  .choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .choice-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 2px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+
+  .choice-card:hover {
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+  }
+
+  .choice-card.recommended {
+    border-color: var(--accent-emerald);
+    background: linear-gradient(135deg, rgba(16,185,129,0.05), transparent);
+  }
+
+  .choice-card .choice-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .choice-card.recommended .choice-label { color: var(--accent-emerald); }
+
+  .choice-card h4 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 0.75rem;
+  }
+
+  .choice-card .range {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .choice-card .note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== ACTION CHECKLIST ===== */
+  .checklist {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+  }
+
+  .checklist h3 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .check-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .check-item:last-child { border-bottom: none; }
+
+  .check-icon {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+  }
+
+  .check-item.urgent .check-icon {
+    border-color: var(--accent-red);
+    background: rgba(239,68,68,0.1);
+    color: var(--accent-red);
+  }
+
+  .check-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .check-text strong { color: var(--text-primary); }
+
+  .check-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+  }
+
+  .check-tag.day1 { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .check-tag.week1 { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+  .check-tag.week2 { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+
+  /* ===== DATA TABLE ===== */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.85rem;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+  }
+
+  .data-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .data-table .num {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .data-table .red { color: var(--accent-red); }
+  .data-table .green { color: var(--accent-emerald); }
+  .data-table .amber { color: var(--accent-amber); }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer a { color: var(--accent-blue); text-decoration: none; }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .is-compare { grid-template-columns: 1fr; }
+    .is-arrow { transform: rotate(90deg); text-align: center; }
+    .choice-grid { grid-template-columns: 1fr; }
+    .wf-row { grid-template-columns: 120px 1fr 60px; }
+    .hero-stats { gap: 1rem; }
   }
 </style>
 </head>
 <body>
 
-<!-- NAVIGATION -->
-<nav class="main-nav" id="mainNav">
-  <div class="main-nav__inner">
-    <div class="main-nav__logo">LUTEIN Analysis</div>
-    <button class="main-nav__hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-    <ul class="main-nav__links" id="navLinks">
-      <li><a href="#cover" class="main-nav__link" data-chapter="cover">Top</a></li>
-      <li><a href="#ch1" class="main-nav__link" data-chapter="1">Overview</a></li>
-      <li><a href="#ch2" class="main-nav__link" data-chapter="2">Trends</a></li>
-      <li><a href="#ch3" class="main-nav__link" data-chapter="3">CV Structure</a></li>
-      <li><a href="#ch4" class="main-nav__link" data-chapter="4">SERP Competition</a></li>
-      <li><a href="#ch5" class="main-nav__link" data-chapter="5">CV Heatmap</a></li>
-    </ul>
-  </div>
-</nav>
-
-<!-- ========== COVER ========== -->
-<header class="cover" id="cover">
-  <div class="cover__badge">CONFIDENTIAL - 1900film Internal</div>
-  <h1 class="cover__title">LUTEIN ルテイン<br>&#x5206;&#x6790;&#x30C0;&#x30C3;&#x30B7;&#x30E5;&#x30DC;&#x30FC;&#x30C9;</h1>
-  <p class="cover__subtitle">sGTM &times; SERP &#x7D71;&#x5408;&#x5206;&#x6790;&#x30EC;&#x30DD;&#x30FC;&#x30C8;</p>
-  <p class="cover__date">2026-03-12 (Week 11)</p>
-  <div class="visual-pipeline" style="margin:2rem auto;">
-    <div class="pipeline-node"><span class="pipeline-node__icon">&#x1F4CA;</span><span class="pipeline-node__label">Overview</span><span class="pipeline-node__sub">Executive Summary</span></div>
-    <div class="pipeline-connector"><div class="pipeline-connector__line"></div></div>
-    <div class="pipeline-node"><span class="pipeline-node__icon">&#x1F4C8;</span><span class="pipeline-node__label">Trends</span><span class="pipeline-node__sub">sGTM Event</span></div>
-    <div class="pipeline-connector"><div class="pipeline-connector__line"></div></div>
-    <div class="pipeline-node"><span class="pipeline-node__icon">&#x1F3AF;</span><span class="pipeline-node__label">CV Structure</span><span class="pipeline-node__sub">Attribution</span></div>
-    <div class="pipeline-connector"><div class="pipeline-connector__line"></div></div>
-    <div class="pipeline-node"><span class="pipeline-node__icon">&#x1F50D;</span><span class="pipeline-node__label">SERP</span><span class="pipeline-node__sub">Competition</span></div>
-  </div>
-  <div class="cover__scroll-hint"><span></span>&#x30B9;&#x30AF;&#x30ED;&#x30FC;&#x30EB;&#x3057;&#x3066;&#x8AAD;&#x307F;&#x9032;&#x3081;&#x308B;</div>
-</header>
-
-<!-- ========== CH1: Executive Summary (Indigo) ========== -->
-<section class="chapter" id="ch1" data-chapter="1">
-  <div class="chapter-header">
-    <span class="chapter-header__number">CHAPTER 01</span>
-    <h2 class="chapter-header__title">Executive Summary</h2>
-    <p class="chapter-header__subtitle">LUTEIN ルテイン &#x4E3B;&#x8981;KPI&#x30B5;&#x30DE;&#x30EA;&#x30FC;</p>
-  </div>
-  <div class="chapter-body"><div class="container">
-
-    <div class="hero-stat-row animate-on-scroll">
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">RED TEAM REVIEW</div>
+    <h1>めぐみのルテイン<br><span class="highlight">盲点が見つかった。</span></h1>
+    <p class="hero-subtitle">3つの戦略提案をBigQueryで検証した結果、全案に共通する致命的な前提の誤りが判明。ここからが本当の戦略設計。</p>
+    <div class="hero-stats">
       <div class="hero-stat">
-        <span class="hero-stat__value">7,620</span>
-        <span class="hero-stat__label">lutein_cv Total</span>
-        <span class="hero-stat__sub">sGTM all_conversions</span>
+        <div class="value" style="color: var(--accent-red);">0%</div>
+        <div class="label">予算IS損失率（全KW共通）</div>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat__value">305</span>
-        <span class="hero-stat__label">Weekly CV</span>
-        <span class="hero-stat__sub">3/5〜3/11</span>
+        <div class="value" style="color: var(--accent-coral);">53-90%</div>
+        <div class="label">ランクIS損失率</div>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat__value">23.1%</span>
-        <span class="hero-stat__label">&#x81EA;&#x793E;adcode&#x6BD4;&#x7387;</span>
-        <span class="hero-stat__sub">&#x904E;&#x53BB;7&#x65E5;&#x9593;</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat__value">&yen;8,000</span>
-        <span class="hero-stat__label">Target CPA</span>
-        <span class="hero-stat__sub">&#x76EE;&#x6A19;CPA</span>
+        <div class="value" style="color: var(--accent-blue);">10-15%</div>
+        <div class="label">CV600+CPA7000 同時達成確率</div>
       </div>
     </div>
-
-  </div></div>
-</section>
-
-<div class="chapter-transition">
-  <span class="chapter-transition__arrow">&#x2B07;&#xFE0F;</span>
-  <p class="chapter-transition__text">sGTM&#x30A4;&#x30D9;&#x30F3;&#x30C8;&#x306E;&#x6642;&#x7CFB;&#x5217;&#x30C8;&#x30EC;&#x30F3;&#x30C9;&#x3078;</p>
-  <div class="chapter-transition__divider"></div>
-</div>
-
-<!-- ========== CH2: sGTM Event Analysis (Blue) ========== -->
-<section class="chapter" id="ch2" data-chapter="2">
-  <div class="chapter-header">
-    <span class="chapter-header__number">CHAPTER 02</span>
-    <h2 class="chapter-header__title">sGTM Event Analysis</h2>
-    <p class="chapter-header__subtitle">&#x6708;&#x6B21;&#x30FB;&#x65E5;&#x6B21;&#x30C8;&#x30EC;&#x30F3;&#x30C9;&#x3068;adcode&#x69CB;&#x6210;</p>
   </div>
-  <div class="chapter-body"><div class="container">
-
-    <!-- 2-1 Monthly Trend -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">2-1</span>
-      <h3>Monthly Trend (6 Months)</h3>
-    </div>
-    <div class="hbar-chart animate-on-scroll" id="monthlyChart">
-      
-      <div class="hbar-row"><span class="hbar-label">2025-08</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="62.6%"><span>819</span></div></div><span class="hbar-meta ">&mdash;</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2025-09</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="75.7%"><span>991</span></div></div><span class="hbar-meta hbar-meta--up">+21.0%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2025-10</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="98.2%"><span>1,285</span></div></div><span class="hbar-meta hbar-meta--up">+29.7%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2025-11</span><div class="hbar-track"><div class="hbar-fill hbar-fill--peak" data-width="100.0%"><span>1,309 PEAK</span></div></div><span class="hbar-meta hbar-meta--up">+1.9%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2025-12</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="77.2%"><span>1,011</span></div></div><span class="hbar-meta hbar-meta--down">-22.8%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2026-01</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="33.5%"><span>439</span></div></div><span class="hbar-meta hbar-meta--down">-56.6%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2026-02</span><div class="hbar-track"><div class="hbar-fill hbar-fill--blue" data-width="95.6%"><span>1,251</span></div></div><span class="hbar-meta hbar-meta--up">+185.0%</span></div>
-      
-      <div class="hbar-row"><span class="hbar-label">2026-03</span><div class="hbar-track"><div class="hbar-fill hbar-fill--projected" data-width="39.3%"><span>515* (推計1287)</span></div></div><span class="hbar-meta hbar-meta--down">-58.8%</span></div>
-      
-    </div>
-    
-    <div class="trend-annotation animate-on-scroll">ピーク後 4% 減少（1,309 → 1,251）</div>
-    
-
-    <!-- 2-2 Daily Trend -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">2-2</span>
-      <h3>Daily Trend (14 Days)</h3>
-    </div>
-    <div class="vbar-chart animate-on-scroll" id="dailyChart">
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="54.5%">36</div><span class="vbar-label">2/26</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="62.1%">41</div><span class="vbar-label">2/27</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="87.9%">58</div><span class="vbar-label">2/28</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="100.0%">66</div><span class="vbar-label">3/1</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="77.3%">51</div><span class="vbar-label">3/2</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="84.8%">56</div><span class="vbar-label">3/3</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w1" data-height="56.1%">37</div><span class="vbar-label">3/4</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="86.4%">57</div><span class="vbar-label">3/5</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="71.2%">47</div><span class="vbar-label">3/6</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="50.0%">33</div><span class="vbar-label">3/7</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="57.6%">38</div><span class="vbar-label">3/8</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="60.6%">40</div><span class="vbar-label">3/9</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="57.6%">38</div><span class="vbar-label">3/10</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="66.7%">44</div><span class="vbar-label">3/11</span></div>
-      
-      <div class="vbar-col"><div class="vbar-fill vbar-fill--w2" data-height="12.1%">8</div><span class="vbar-label">3/12</span></div>
-      
-    </div>
-    <div class="week-compare animate-on-scroll">
-      <div class="week-compare__card"><div class="week-compare__label">Week 1 (2/26-3/4)</div><div class="week-compare__value">345</div></div>
-      <div class="week-compare__card"><div class="week-compare__label">Week 2 (3/5-3/12)</div><div class="week-compare__value">305</div></div>
-      <div class="week-compare__card week-compare__card--delta"><div class="week-compare__label">WoW</div><div class="week-compare__value">-11.6%</div></div>
-    </div>
-
-    <!-- 2-3 adcode Breakdown -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">2-3</span>
-      <h3>adcode Breakdown (7 Days)</h3>
-    </div>
-    <div class="donut-container animate-on-scroll">
-      <div class="donut" style="background:conic-gradient(#EF4444 0.0% 31.7%,#F97316 31.7% 48.599999999999994%,#22C55E 48.599999999999994% 64.8%,#94A3B8 64.8% 75.8%,#6366F1 75.8% 82.0%,#0668E1 82.0% 87.2%,#8B5CF6 87.2% 91.7%,#EC4899 91.7% 94.8%,#EF4444 94.8% 97.89999999999999%,#F97316 97.89999999999999% 99.99999999999999%);">
-        <div class="donut-center"><span class="donut-center__value">290</span><span class="donut-center__label">Total CV</span></div>
-      </div>
-      <div class="donut-legend">
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#EF4444;"></div><span class="donut-legend__label">lutein_rent_a</span><span class="donut-legend__value">92 (31.7%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#F97316;"></div><span class="donut-legend__label">lutein_1900_1</span><span class="donut-legend__value">49 (16.9%) &larr; &#x81EA;&#x793E;</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#22C55E;"></div><span class="donut-legend__label">lutein_accesstrade_s2</span><span class="donut-legend__value">47 (16.2%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#94A3B8;"></div><span class="donut-legend__label">lutein_so_972_2gli</span><span class="donut-legend__value">32 (11.0%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#6366F1;"></div><span class="donut-legend__label">lutein_rent_6666</span><span class="donut-legend__value">18 (6.2%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#0668E1;"></div><span class="donut-legend__label">lutein</span><span class="donut-legend__value">15 (5.2%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#8B5CF6;"></div><span class="donut-legend__label">lutein_rent_m</span><span class="donut-legend__value">13 (4.5%)</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#EC4899;"></div><span class="donut-legend__label">lutein_1900_3</span><span class="donut-legend__value">9 (3.1%) &larr; &#x81EA;&#x793E;</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#EF4444;"></div><span class="donut-legend__label">lutein_1900_12</span><span class="donut-legend__value">9 (3.1%) &larr; &#x81EA;&#x793E;</span></div>
-        
-        <div class="donut-legend__item"><div class="donut-legend__color" style="background:#F97316;"></div><span class="donut-legend__label">lutein_so_972_p</span><span class="donut-legend__value">6 (2.1%)</span></div>
-        
-      </div>
-    </div>
-    
-    <div class="insight-card animate-on-scroll">
-      <span class="insight-card__icon">&#x26A0;&#xFE0F;</span>
-      <span class="insight-card__text">競合adcodeが 76.9% を占有。自社運用は 23.1%</span>
-    </div>
-    
-
-  </div></div>
+  <div class="scroll-indicator">SCROLL</div>
 </section>
 
-<div class="chapter-transition">
-  <span class="chapter-transition__arrow">&#x2B07;&#xFE0F;</span>
-  <p class="chapter-transition__text">CV&#x69CB;&#x6210;&#x3068;&#x30A2;&#x30C8;&#x30EA;&#x30D3;&#x30E5;&#x30FC;&#x30B7;&#x30E7;&#x30F3;&#x5206;&#x6790;&#x3078;</p>
-  <div class="chapter-transition__divider"></div>
-</div>
+<!-- ===== SECTION 1: THE BLIND SPOT ===== -->
+<section class="section">
+  <span class="section-label">Discovery</span>
+  <h2>最大の盲点：予算を増やしてもIMPは増えない</h2>
+  <p class="section-desc">3案すべてが「予算増→IS拡大→CV増」を前提としていた。しかしBigQueryのIS分析で、損失の原因が予算ではなくランク（Ad Rank不足）であることが判明。</p>
 
-<!-- ========== CH3: CV Structure & Attribution (Green) ========== -->
-<section class="chapter" id="ch3" data-chapter="3">
-  <div class="chapter-header">
-    <span class="chapter-header__number">CHAPTER 03</span>
-    <h2 class="chapter-header__title">CV Structure &amp; Attribution</h2>
-    <p class="chapter-header__subtitle">GA4&#x30A2;&#x30D5;&#x30A3;&#x30EA;&#x30A8;&#x30A4;&#x30C8;&#x30D1;&#x30D5;&#x30A9;&#x30FC;&#x30DE;&#x30F3;&#x30B9;</p>
+  <div class="blindspot">
+    <span class="blindspot-tag">BigQuery検証で発覚</span>
+    <h3>budget_lost（予算によるIS損失）= 全KWで0%</h3>
+    <div style="text-align: center;">
+      <div class="zero-badge">0%</div>
+    </div>
+    <p>主要4キーワードすべてで、予算起因のインプレッション損失はゼロ。ISが取れていない原因は<strong style="color: var(--accent-red);">Ad Rank不足</strong>（品質スコア×入札額が競合に負けている）。予算を2倍にしても3倍にしても、消化されずに余るだけ。</p>
   </div>
-  <div class="chapter-body"><div class="container">
 
-    <!-- 3-1 adcode CV (GA4) -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">3-1</span>
-      <h3>GA4 adcode&#x5225; Click / CV / CVR</h3>
+  <div class="is-compare">
+    <div class="is-box wrong">
+      <h4>3案の前提（誤り）</h4>
+      <div class="metric" style="color: var(--accent-red);">予算不足</div>
+      <div class="detail">「予算を増やせばIS拡大」<br>→ budget_lost = 0%で否定</div>
     </div>
-    
-    <p class="animate-on-scroll" style="color:var(--text-sub);font-style:italic;">GA4 adcode&#x30C7;&#x30FC;&#x30BF;&#x306A;&#x3057;</p>
-    
-
-    <!-- 3-2 domain CV (GA4) -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">3-2</span>
-      <h3>GA4 &#x30C9;&#x30E1;&#x30A4;&#x30F3;&#x5225; Click / CV / CVR</h3>
+    <div class="is-arrow">→</div>
+    <div class="is-box correct">
+      <h4>実態（BigQuery検証）</h4>
+      <div class="metric" style="color: var(--accent-emerald);">ランク不足</div>
+      <div class="detail">rank_lost = 53-90%<br>→ tCPA引上げ or QS改善が必要</div>
     </div>
-    
-    <div class="hbar-chart animate-on-scroll">
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">464981.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="100.0%"><span>373 (CVR 7.0%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">frm.karada-tukuru.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="23.6%"><span>88 (CVR 8.4%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">www.google.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="15.0%"><span>56 (CVR 2.2%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">we-choice.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="15.0%"><span>56 (CVR 11.7%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">eye-supplement.jp</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="9.4%"><span>35 (CVR 12.8%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">pluto-ad.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="7.8%"><span>29 (CVR 2.1%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">oyakudachi123.net</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="6.4%"><span>24 (CVR 6.0%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">dtnt19.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="4.0%"><span>15 (CVR 8.6%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">minna-best.com</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="3.5%"><span>13 (CVR 13.4%)</span></div></div></div>
-      
-      
-      <div class="hbar-row"><span class="hbar-label" style="min-width:150px;">prmarketing.jp</span><div class="hbar-track"><div class="hbar-fill hbar-fill--coral" data-width="3.2%"><span>12 (CVR 4.9%)</span></div></div></div>
-      
-    </div>
-    
-
-  </div></div>
-</section>
-
-<div class="chapter-transition">
-  <span class="chapter-transition__arrow">&#x2B07;&#xFE0F;</span>
-  <p class="chapter-transition__text">SERP&#x7AF6;&#x5408;&#x74B0;&#x5883;&#x306E;&#x5909;&#x5316;&#x3078;</p>
-  <div class="chapter-transition__divider"></div>
-</div>
-
-<!-- ========== CH4: SERP Competition & Strategy (Amber) ========== -->
-<section class="chapter" id="ch4" data-chapter="4">
-  <div class="chapter-header">
-    <span class="chapter-header__number">CHAPTER 04</span>
-    <h2 class="chapter-header__title">SERP Competition &amp; Strategy</h2>
-    <p class="chapter-header__subtitle">&#x691C;&#x7D22;&#x9806;&#x4F4D;&#x306E;&#x7AF6;&#x5408;&#x5909;&#x52D5;&#x3068;&#x596A;&#x9084;&#x6226;&#x7565;</p>
   </div>
-  <div class="chapter-body"><div class="container">
 
-    <!-- 4-1 SERP Summary Table -->
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">4-1</span>
-      <h3>SERP &#x6700;&#x65B0;&#x5206;&#x6790;&#x30B5;&#x30DE;&#x30EA;&#x30FC;</h3>
-    </div>
-    
-    <div class="animate-on-scroll" style="overflow-x:auto;">
-      <table class="serp-table">
-        <thead><tr><th style="min-width:220px;">&#x30AF;&#x30A8;&#x30EA;</th><th>&#x512A;&#x5148;&#x5EA6;</th><th>&#x81EA;&#x793E;&#x9806;&#x4F4D;</th><th>&#x7AF6;&#x5408;&#x6700;&#x9AD8;</th><th>&#x7AF6;&#x5408;&#x30C9;&#x30E1;&#x30A4;&#x30F3;</th><th>CV(14&#x65E5;)</th><th>&#x5224;&#x5B9A;</th></tr></thead>
-        <tbody>
-          
-          <tr>
-            <td>目 の サプリメント おすすめ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">1</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>目 の かすみ サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">1</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 回復 サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">6</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">+40〜50%</td>
-          </tr>
-          
-          <tr>
-            <td>眼科 医 が すすめる サプリメント ルテイン</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ウエル ビジョン</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>suntory-kenko.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 改善</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>tomita-ginza-rogan.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 ルテイン</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>tomita-ginza-rogan.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン サプリ ランキング</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ゼアキサンチン サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>るていん.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン アクティブ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>suntory-kenko.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 サプリ ランキング</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン サプリ おすすめ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン フリー 体 エステル 体</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>アイムエイド 評判</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 視力 回復</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>tomita-ginza-rogan.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>視力 サプリ 効果</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 治る</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>tomita-ginza-rogan.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>アイムエイド 効果 なし</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>本当に 効く 目 の サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">4</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">+40〜50%</td>
-          </tr>
-          
-          <tr>
-            <td>目 の 疲労 回復</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>ehitomi.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ロート v5 アクト ビジョン a</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>cp.rohto.co.jp</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>目 に 効く 薬</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 サプリ おすすめ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ロート ルテイン</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>cp.rohto.co.jp</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 に 効く サプリメント</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>老眼 サプリメント</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>sb.health-info.site</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>かすみ 目 に 効く 薬</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>cp.rohto.co.jp</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>ルテイン エステル</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>るていん.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-          <tr>
-            <td>目 の 疲れ サプリ</td>
-            <td class="serp-cell--2">HIGH</td>
-            <td class="text-center">-</td>
-            <td class="text-center">1</td>
-            <td>we-choice.com</td>
-            <td class="text-center font-bold">0</td>
-            <td class="">新規追加推奨</td>
-          </tr>
-          
-        </tbody>
-      </table>
-    </div>
-    
-
-    <!-- 4-2 Priority KW -->
-    
-    <div class="section-heading animate-on-scroll">
-      <span class="section-heading__badge">4-2</span>
-      <h3>&#x8981;&#x5BFE;&#x5FDC; KW&#xFF08;CRITICAL / HIGH&#xFF09;</h3>
-    </div>
-    <div class="priority-list animate-on-scroll">
-      
-      <div class="priority-card"><span class="priority-card__rank">1</span><div class="priority-card__content"><div class="priority-card__kw">目 の サプリメント おすすめ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合sb.health-info.siteがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">2</span><div class="priority-card__content"><div class="priority-card__kw">目 の かすみ サプリ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">3</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン サプリ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">4</span><div class="priority-card__content"><div class="priority-card__kw">老眼 回復 サプリ</div><div class="priority-card__status">HIGH / +40〜50%</div><div class="priority-card__reason">当社6位 vs 競合1位（sb.health-info.site）</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">5</span><div class="priority-card__content"><div class="priority-card__kw">眼科 医 が すすめる サプリメント ルテイン</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">6</span><div class="priority-card__content"><div class="priority-card__kw">ウエル ビジョン</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合suntory-kenko.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">7</span><div class="priority-card__content"><div class="priority-card__kw">老眼 改善</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合tomita-ginza-rogan.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">8</span><div class="priority-card__content"><div class="priority-card__kw">老眼 ルテイン</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合tomita-ginza-rogan.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">9</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン サプリ ランキング</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">10</span><div class="priority-card__content"><div class="priority-card__kw">ゼアキサンチン サプリ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合るていん.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">11</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン アクティブ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合suntory-kenko.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">12</span><div class="priority-card__content"><div class="priority-card__kw">老眼 サプリ ランキング</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合sb.health-info.siteがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">13</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン サプリ おすすめ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">14</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン フリー 体 エステル 体</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">15</span><div class="priority-card__content"><div class="priority-card__kw">アイムエイド 評判</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">16</span><div class="priority-card__content"><div class="priority-card__kw">老眼 視力 回復</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合tomita-ginza-rogan.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">17</span><div class="priority-card__content"><div class="priority-card__kw">視力 サプリ 効果</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">18</span><div class="priority-card__content"><div class="priority-card__kw">老眼 治る</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合tomita-ginza-rogan.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">19</span><div class="priority-card__content"><div class="priority-card__kw">アイムエイド 効果 なし</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">20</span><div class="priority-card__content"><div class="priority-card__kw">本当に 効く 目 の サプリ</div><div class="priority-card__status">HIGH / +40〜50%</div><div class="priority-card__reason">当社4位 vs 競合1位（sb.health-info.site）</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">21</span><div class="priority-card__content"><div class="priority-card__kw">目 の 疲労 回復</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合ehitomi.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">22</span><div class="priority-card__content"><div class="priority-card__kw">ロート v5 アクト ビジョン a</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合cp.rohto.co.jpがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">23</span><div class="priority-card__content"><div class="priority-card__kw">目 に 効く 薬</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">24</span><div class="priority-card__content"><div class="priority-card__kw">老眼 サプリ おすすめ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合sb.health-info.siteがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">25</span><div class="priority-card__content"><div class="priority-card__kw">ロート ルテイン</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合cp.rohto.co.jpがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">26</span><div class="priority-card__content"><div class="priority-card__kw">老眼 に 効く サプリメント</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合sb.health-info.siteがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">27</span><div class="priority-card__content"><div class="priority-card__kw">老眼 サプリメント</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合sb.health-info.siteがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">28</span><div class="priority-card__content"><div class="priority-card__kw">かすみ 目 に 効く 薬</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合cp.rohto.co.jpがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">29</span><div class="priority-card__content"><div class="priority-card__kw">ルテイン エステル</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合るていん.comがTOP1独占中</div></div></div>
-      
-      <div class="priority-card"><span class="priority-card__rank">30</span><div class="priority-card__content"><div class="priority-card__kw">目 の 疲れ サプリ</div><div class="priority-card__status">HIGH / 新規追加推奨</div><div class="priority-card__reason">【新規】競合we-choice.comがTOP1独占中</div></div></div>
-      
-    </div>
-    
-
-  </div></div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>キーワード</th>
+        <th class="num">Search IS</th>
+        <th class="num">ランク損失</th>
+        <th class="num">予算損失</th>
+        <th>品質スコア</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ルテイン サプリ</td>
+        <td class="num amber">46.6%</td>
+        <td class="num red">53.4%</td>
+        <td class="num green">0%</td>
+        <td>QS 8</td>
+      </tr>
+      <tr>
+        <td>ルテイン サプリ おすすめ</td>
+        <td class="num amber">47.9%</td>
+        <td class="num red">52.1%</td>
+        <td class="num green">0%</td>
+        <td>QS 7</td>
+      </tr>
+      <tr>
+        <td>ルテイン 効果</td>
+        <td class="num red">21.3%</td>
+        <td class="num red">78.7%</td>
+        <td class="num green">0%</td>
+        <td>QS 8</td>
+      </tr>
+      <tr>
+        <td>眼科医がすすめるサプリ 市販</td>
+        <td class="num red">26.1%</td>
+        <td class="num red">73.9%</td>
+        <td class="num green">0%</td>
+        <td>QS 7</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
+<div class="divider"></div>
 
-<div class="chapter-transition">
-  <span class="chapter-transition__arrow">&#x2B07;&#xFE0F;</span>
-  <p class="chapter-transition__text">CV&#x6642;&#x9593;&#x5E2F;&#x30D2;&#x30FC;&#x30C8;&#x30DE;&#x30C3;&#x30D7;&#x3068;&#x914D;&#x4FE1;&#x63D0;&#x6848;&#x3078;</p>
-  <div class="chapter-transition__divider"></div>
-</div>
+<!-- ===== SECTION 2: VERDICTS ===== -->
+<section class="section">
+  <span class="section-label">Round 1-3 Summary</span>
+  <h2>3案のレビュー結果</h2>
+  <p class="section-desc">各戦略を数値の妥当性・実現可能性・リスク見落としの3軸でレビュー。3ラウンドの議論を経た最終判定。</p>
 
-<!-- ========== CH5: CV Heatmap & Campaign Proposal (Pink) ========== -->
-<section class="chapter" id="ch5" data-chapter="5">
-  <div class="chapter-header">
-    <span class="chapter-header__number">CHAPTER 05</span>
-    <h2 class="chapter-header__title">CV Heatmap &amp; Campaign Proposal</h2>
-    <p class="chapter-header__subtitle">&#x6642;&#x9593;&#x5E2F;&#x00D7;&#x66DC;&#x65E5;CV&#x5206;&#x5E03;&#x3068;&#x914D;&#x4FE1;&#x62E1;&#x5927;&#x63D0;&#x6848;</p>
+  <div class="verdict-grid">
+    <!-- Strategy A -->
+    <div class="verdict-card">
+      <div class="strategy-name">STRATEGY A</div>
+      <h3>ボリューム拡張路線</h3>
+      <span class="verdict-badge revise">REVISE</span>
+      <div class="verdict-metrics">
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-red);">20-30%</div>
+          <div class="vm-label">CV達成確度</div>
+        </div>
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-red);">15-25%</div>
+          <div class="vm-label">CPA達成確度</div>
+        </div>
+      </div>
+      <ul class="critique-list">
+        <li class="fatal">IS拡大の前提が根本的に誤り（budget_lost=0%）</li>
+        <li class="fatal">700リブートの過去実績がBQで検証不能</li>
+        <li class="major">8施策のCV積み上げにカニバリ未考慮（-20~30%の減衰）</li>
+        <li class="major">Phase 3（月末）のCPA楽観すぎ</li>
+        <li class="minor">ABテスト効果は18日間では発現しない</li>
+      </ul>
+    </div>
+
+    <!-- Strategy B -->
+    <div class="verdict-card" style="border-color: rgba(245,158,11,0.3);">
+      <div class="strategy-name">STRATEGY B</div>
+      <h3>効率改善路線</h3>
+      <span class="verdict-badge conditional">CONDITIONAL-GO</span>
+      <div class="verdict-metrics">
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-amber);">30-40%</div>
+          <div class="vm-label">CV達成確度</div>
+        </div>
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-emerald);">50-60%</div>
+          <div class="vm-label">CPA達成確度</div>
+        </div>
+      </div>
+      <ul class="critique-list">
+        <li class="fatal">自ら「日20-25CV上限」と言いつつPhase 4で47CV/日を予測</li>
+        <li class="major">DG支出額・P-Max CVが他案と数値不一致</li>
+        <li class="major">段階的予算増で4回のSmart Bidding学習リセット</li>
+        <li class="minor">曜日別データはサンプル2日分で統計的に不十分</li>
+        <li class="minor">TABLET除外効果は¥1,233/日で微小</li>
+      </ul>
+    </div>
+
+    <!-- Strategy C -->
+    <div class="verdict-card">
+      <div class="strategy-name">STRATEGY C</div>
+      <h3>構造改革路線</h3>
+      <span class="verdict-badge revise">REVISE</span>
+      <div class="verdict-metrics">
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-red);">15-25%</div>
+          <div class="vm-label">CV達成確度</div>
+        </div>
+        <div class="verdict-metric">
+          <div class="vm-value" style="color: var(--accent-red);">20-30%</div>
+          <div class="vm-label">CPA達成確度</div>
+        </div>
+      </div>
+      <ul class="critique-list">
+        <li class="fatal">新キャンペーン3本=Smart Bidding学習をゼロからやり直し</li>
+        <li class="fatal">TIER1「予算12倍でCPA維持」はbudget_lost=0%で破綻</li>
+        <li class="fatal">3日間の並行運用では移行リスクを吸収不能</li>
+        <li class="major">KW移設で品質スコア履歴がリセットされる</li>
+        <li class="minor">50%シェア計算が自己矛盾</li>
+      </ul>
+    </div>
   </div>
-  <div class="chapter-body"><div class="container">
-
-    <!-- Tab Navigation -->
-    <div class="heatmap-tabs">
-      <button class="heatmap-tab active" data-target="heatmap-panel">CV&#x30D2;&#x30FC;&#x30C8;&#x30DE;&#x30C3;&#x30D7;</button>
-      <button class="heatmap-tab" data-target="proposal-panel">&#x8FFD;&#x52A0;&#x30AD;&#x30E3;&#x30F3;&#x30DA;&#x30FC;&#x30F3;&#x63D0;&#x6848;</button>
-    </div>
-
-    <!-- Panel 1: CV Heatmap -->
-    <div class="heatmap-panel active" id="heatmap-panel">
-
-      <!-- View toggle -->
-      <div class="heatmap-view-toggle">
-        <button class="heatmap-view-btn active-total" data-view="total">&#x5168;&#x30C1;&#x30E3;&#x30CD;&#x30EB; CV</button>
-        <button class="heatmap-view-btn" data-view="1900">1900&#xFF08;&#x81EA;&#x793E;&#xFF09; CV</button>
-      </div>
-
-      <!-- 5-1 Weekday Heatmap -->
-      <div class="section-heading animate-on-scroll">
-        <span class="section-heading__badge">5-1</span>
-        <h3>&#x5E73;&#x65E5;&#xFF08;&#x6708;&#x301C;&#x91D1;&#xFF09;</h3>
-      </div>
-      <div class="heatmap-grid heatmap-grid--weekday animate-on-scroll" id="heatmapWeekday">
-        <!-- Header row -->
-        <div class="heatmap-cell heatmap-cell--header"></div>
-        <div class="heatmap-cell heatmap-cell--header">0</div><div class="heatmap-cell heatmap-cell--header">1</div><div class="heatmap-cell heatmap-cell--header">2</div><div class="heatmap-cell heatmap-cell--header">3</div><div class="heatmap-cell heatmap-cell--header">4</div><div class="heatmap-cell heatmap-cell--header">5</div><div class="heatmap-cell heatmap-cell--header">6</div><div class="heatmap-cell heatmap-cell--header">7</div><div class="heatmap-cell heatmap-cell--header">8</div><div class="heatmap-cell heatmap-cell--header">9</div><div class="heatmap-cell heatmap-cell--header">10</div><div class="heatmap-cell heatmap-cell--header">11</div><div class="heatmap-cell heatmap-cell--header">12</div><div class="heatmap-cell heatmap-cell--header">13</div><div class="heatmap-cell heatmap-cell--header">14</div><div class="heatmap-cell heatmap-cell--header">15</div><div class="heatmap-cell heatmap-cell--header">16</div><div class="heatmap-cell heatmap-cell--header">17</div><div class="heatmap-cell heatmap-cell--header">18</div><div class="heatmap-cell heatmap-cell--header">19</div><div class="heatmap-cell heatmap-cell--header">20</div><div class="heatmap-cell heatmap-cell--header">21</div><div class="heatmap-cell heatmap-cell--header">22</div><div class="heatmap-cell heatmap-cell--header">23</div>
-        <!-- Data rows (Mon-Fri = dow 2-6) -->
-        
-        <div class="heatmap-cell heatmap-cell--dow">月</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="4" data-intensity-total="0.44" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="3" data-intensity-total="0.36" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="0" data-intensity-total="0.28" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="2" data-intensity-total="0.48" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="1" data-intensity-total="0.52" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="14" data-cv-1900="5" data-intensity-total="0.56" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.56);color:#FFF">14</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="4" data-intensity-total="0.48" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="1" data-intensity-total="0.32" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="0" data-intensity-total="0.32" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="2" data-intensity-total="0.52" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="2" data-intensity-total="0.36" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="2" data-intensity-total="0.52" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="2" data-intensity-total="0.44" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="0" data-intensity-total="0.28" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="2" data-cv-1900="1" data-intensity-total="0.08" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.08);color:#92400E">2</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="0" data-intensity-total="0.12" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="0" data-intensity-total="0.12" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="2" data-cv-1900="0" data-intensity-total="0.08" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.08);color:#92400E">2</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="1" data-intensity-total="0.28" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        
-        <div class="heatmap-cell heatmap-cell--dow">火</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="3" data-intensity-total="0.32" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="0" data-intensity-total="0.52" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="6" data-intensity-total="0.6" data-intensity-1900="0.857" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="0" data-intensity-total="0.52" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="18" data-cv-1900="4" data-intensity-total="0.72" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.72);color:#FFF">18</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="1" data-intensity-total="0.44" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="1" data-intensity-total="0.52" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="1" data-intensity-total="0.44" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="2" data-intensity-total="0.36" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="3" data-intensity-total="0.48" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="20" data-cv-1900="4" data-intensity-total="0.8" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.8);color:#FFF">20</div>
-        
-        <div class="heatmap-cell" data-cv-total="17" data-cv-1900="2" data-intensity-total="0.68" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.68);color:#FFF">17</div>
-        
-        <div class="heatmap-cell" data-cv-total="16" data-cv-1900="3" data-intensity-total="0.64" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.64);color:#FFF">16</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="3" data-intensity-total="0.48" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="3" data-intensity-total="0.36" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="0" data-intensity-total="0.16" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="2" data-cv-1900="0" data-intensity-total="0.08" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.08);color:#92400E">2</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="2" data-intensity-total="0.16" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="0" data-intensity-total="0.12" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="3" data-intensity-total="0.4" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="14" data-cv-1900="2" data-intensity-total="0.56" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.56);color:#FFF">14</div>
-        
-        
-        <div class="heatmap-cell heatmap-cell--dow">水</div>
-        
-        <div class="heatmap-cell" data-cv-total="17" data-cv-1900="3" data-intensity-total="0.68" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.68);color:#FFF">17</div>
-        
-        <div class="heatmap-cell" data-cv-total="25" data-cv-1900="6" data-intensity-total="1.0" data-intensity-1900="0.857" style="background:rgba(245,158,11,1.0);color:#FFF">25</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="4" data-intensity-total="0.48" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="14" data-cv-1900="2" data-intensity-total="0.56" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.56);color:#FFF">14</div>
-        
-        <div class="heatmap-cell" data-cv-total="17" data-cv-1900="4" data-intensity-total="0.68" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.68);color:#FFF">17</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="1" data-intensity-total="0.4" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="1" data-intensity-total="0.4" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="2" data-intensity-total="0.48" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="20" data-cv-1900="5" data-intensity-total="0.8" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.8);color:#FFF">20</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="1" data-intensity-total="0.32" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="1" data-intensity-total="0.36" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="16" data-cv-1900="2" data-intensity-total="0.64" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.64);color:#FFF">16</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="0" data-intensity-total="0.44" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="2" data-intensity-total="0.44" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="5" data-cv-1900="0" data-intensity-total="0.2" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.2);color:#92400E">5</div>
-        
-        <div class="heatmap-cell" data-cv-total="5" data-cv-1900="2" data-intensity-total="0.2" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.2);color:#92400E">5</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="0" data-intensity-total="0.12" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="5" data-cv-1900="2" data-intensity-total="0.2" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.2);color:#92400E">5</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="1" data-intensity-total="0.36" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        
-        <div class="heatmap-cell heatmap-cell--dow">木</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="4" data-intensity-total="0.6" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="2" data-intensity-total="0.48" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="4" data-intensity-total="0.28" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="1" data-intensity-total="0.28" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="2" data-intensity-total="0.44" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="16" data-cv-1900="5" data-intensity-total="0.64" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.64);color:#FFF">16</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="2" data-intensity-total="0.24" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="0" data-intensity-total="0.32" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="2" data-intensity-total="0.44" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="2" data-intensity-total="0.4" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="14" data-cv-1900="0" data-intensity-total="0.56" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.56);color:#FFF">14</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="2" data-intensity-total="0.48" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="0" data-intensity-total="0.44" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="0" data-intensity-total="0.28" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="1" data-intensity-total="0.32" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        
-        <div class="heatmap-cell heatmap-cell--dow">金</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="3" data-intensity-total="0.52" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="0" data-intensity-total="0.36" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="5" data-intensity-total="0.48" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="0" data-intensity-total="0.32" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="1" data-intensity-total="0.32" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="1" data-intensity-total="0.4" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="17" data-cv-1900="6" data-intensity-total="0.68" data-intensity-1900="0.857" style="background:rgba(245,158,11,0.68);color:#FFF">17</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="2" data-intensity-total="0.4" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="1" data-intensity-total="0.28" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="3" data-intensity-total="0.48" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="4" data-intensity-total="0.28" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="1" data-intensity-total="0.44" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="3" data-intensity-total="0.32" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="1" data-intensity-total="0.16" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="2" data-cv-1900="1" data-intensity-total="0.08" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.08);color:#92400E">2</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="1" data-intensity-total="0.28" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="2" data-intensity-total="0.36" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="5" data-cv-1900="1" data-intensity-total="0.2" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.2);color:#92400E">5</div>
-        
-        
-      </div>
-
-      <!-- 5-2 Weekend Heatmap -->
-      <div class="section-heading animate-on-scroll">
-        <span class="section-heading__badge">5-2</span>
-        <h3>&#x571F;&#x65E5;</h3>
-      </div>
-      <div class="heatmap-grid heatmap-grid--weekend animate-on-scroll" id="heatmapWeekend">
-        <div class="heatmap-cell heatmap-cell--header"></div>
-        <div class="heatmap-cell heatmap-cell--header">0</div><div class="heatmap-cell heatmap-cell--header">1</div><div class="heatmap-cell heatmap-cell--header">2</div><div class="heatmap-cell heatmap-cell--header">3</div><div class="heatmap-cell heatmap-cell--header">4</div><div class="heatmap-cell heatmap-cell--header">5</div><div class="heatmap-cell heatmap-cell--header">6</div><div class="heatmap-cell heatmap-cell--header">7</div><div class="heatmap-cell heatmap-cell--header">8</div><div class="heatmap-cell heatmap-cell--header">9</div><div class="heatmap-cell heatmap-cell--header">10</div><div class="heatmap-cell heatmap-cell--header">11</div><div class="heatmap-cell heatmap-cell--header">12</div><div class="heatmap-cell heatmap-cell--header">13</div><div class="heatmap-cell heatmap-cell--header">14</div><div class="heatmap-cell heatmap-cell--header">15</div><div class="heatmap-cell heatmap-cell--header">16</div><div class="heatmap-cell heatmap-cell--header">17</div><div class="heatmap-cell heatmap-cell--header">18</div><div class="heatmap-cell heatmap-cell--header">19</div><div class="heatmap-cell heatmap-cell--header">20</div><div class="heatmap-cell heatmap-cell--header">21</div><div class="heatmap-cell heatmap-cell--header">22</div><div class="heatmap-cell heatmap-cell--header">23</div>
-        
-        <div class="heatmap-cell heatmap-cell--dow">日</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="0" data-intensity-total="0.6" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="19" data-cv-1900="7" data-intensity-total="0.76" data-intensity-1900="1.0" style="background:rgba(245,158,11,0.76);color:#FFF">19</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="0" data-intensity-total="0.48" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="3" data-intensity-total="0.24" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="16" data-cv-1900="3" data-intensity-total="0.64" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.64);color:#FFF">16</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="1" data-intensity-total="0.44" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="4" data-intensity-total="0.52" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="1" data-intensity-total="0.4" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="2" data-intensity-total="0.6" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="1" data-intensity-total="0.48" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="1" data-intensity-total="0.48" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="2" data-intensity-total="0.36" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="1" data-intensity-total="0.16" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="2" data-intensity-total="0.12" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="0" data-cv-1900="0" data-intensity-total="0.0" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.0);color:#92400E">0</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="0" data-intensity-total="0.12" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="5" data-intensity-total="0.44" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        
-        <div class="heatmap-cell heatmap-cell--dow">土</div>
-        
-        <div class="heatmap-cell" data-cv-total="11" data-cv-1900="3" data-intensity-total="0.44" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.44);color:#92400E">11</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="4" data-intensity-total="0.6" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="15" data-cv-1900="5" data-intensity-total="0.6" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.6);color:#FFF">15</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="3" data-intensity-total="0.4" data-intensity-1900="0.429" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="13" data-cv-1900="1" data-intensity-total="0.52" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.52);color:#FFF">13</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="0" data-intensity-total="0.28" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="0" data-intensity-total="0.16" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="6" data-cv-1900="1" data-intensity-total="0.24" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.24);color:#92400E">6</div>
-        
-        <div class="heatmap-cell" data-cv-total="10" data-cv-1900="1" data-intensity-total="0.4" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.4);color:#92400E">10</div>
-        
-        <div class="heatmap-cell" data-cv-total="9" data-cv-1900="4" data-intensity-total="0.36" data-intensity-1900="0.571" style="background:rgba(245,158,11,0.36);color:#92400E">9</div>
-        
-        <div class="heatmap-cell" data-cv-total="8" data-cv-1900="2" data-intensity-total="0.32" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.32);color:#92400E">8</div>
-        
-        <div class="heatmap-cell" data-cv-total="7" data-cv-1900="0" data-intensity-total="0.28" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.28);color:#92400E">7</div>
-        
-        <div class="heatmap-cell" data-cv-total="3" data-cv-1900="1" data-intensity-total="0.12" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.12);color:#92400E">3</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="1" data-intensity-total="0.04" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="2" data-cv-1900="0" data-intensity-total="0.08" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.08);color:#92400E">2</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="1" data-intensity-total="0.04" data-intensity-1900="0.143" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="1" data-cv-1900="0" data-intensity-total="0.04" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.04);color:#92400E">1</div>
-        
-        <div class="heatmap-cell" data-cv-total="4" data-cv-1900="0" data-intensity-total="0.16" data-intensity-1900="0.0" style="background:rgba(245,158,11,0.16);color:#92400E">4</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="5" data-intensity-total="0.48" data-intensity-1900="0.714" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        <div class="heatmap-cell" data-cv-total="12" data-cv-1900="2" data-intensity-total="0.48" data-intensity-1900="0.286" style="background:rgba(245,158,11,0.48);color:#92400E">12</div>
-        
-        
-      </div>
-
-      <div class="heatmap-legend">
-        <span>Low</span>
-        <div class="heatmap-legend__bar heatmap-legend__bar--amber" id="legendBar"></div>
-        <span>High</span>
-        <span style="margin-left:1rem;font-weight:700;">&#x904E;&#x53BB;30&#x65E5;&#x9593;&#x306E;CV&#x4EF6;&#x6570;</span>
-      </div>
-
-      <!-- 5-3 GAds Hourly CPA -->
-      <div class="section-heading animate-on-scroll">
-        <span class="section-heading__badge">5-3</span>
-        <h3>GAds &#x6642;&#x9593;&#x5E2F;&#x5225; CPA</h3>
-      </div>
-      <div class="cpa-bar-chart animate-on-scroll" id="cpaChart">
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="33.8%" style="height:0;">¥8,079</div><span class="cpa-bar-label">0</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="23.2%" style="height:0;">¥5,546</div><span class="cpa-bar-label">1</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="89.1%" style="height:0;">¥21,280</div><span class="cpa-bar-label">2</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="77.4%" style="height:0;">¥18,489</div><span class="cpa-bar-label">3</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="28.0%" style="height:0;">¥6,697</div><span class="cpa-bar-label">4</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="65.2%" style="height:0;">¥15,571</div><span class="cpa-bar-label">5</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="28.8%" style="height:0;">¥6,883</div><span class="cpa-bar-label">6</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="31.5%" style="height:0;">¥7,522</div><span class="cpa-bar-label">7</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="56.9%" style="height:0;">¥13,594</div><span class="cpa-bar-label">8</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="50.8%" style="height:0;">¥12,131</div><span class="cpa-bar-label">9</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="33.7%" style="height:0;">¥8,048</div><span class="cpa-bar-label">10</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="33.0%" style="height:0;">¥7,881</div><span class="cpa-bar-label">11</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="74.4%" style="height:0;">¥17,778</div><span class="cpa-bar-label">12</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--green" data-height="33.0%" style="height:0;">¥7,875</div><span class="cpa-bar-label">13</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="40.8%" style="height:0;">¥9,742</div><span class="cpa-bar-label">14</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="65.2%" style="height:0;">¥15,566</div><span class="cpa-bar-label">15</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="37.7%" style="height:0;">¥8,994</div><span class="cpa-bar-label">16</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="49.5%" style="height:0;">¥11,814</div><span class="cpa-bar-label">17</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--red" data-height="100.0%" style="height:0;">¥23,887</div><span class="cpa-bar-label">18</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="42.8%" style="height:0;">¥10,228</div><span class="cpa-bar-label">19</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="33.7%" style="height:0;">¥8,059</div><span class="cpa-bar-label">20</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="48.7%" style="height:0;">¥11,633</div><span class="cpa-bar-label">21</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="49.4%" style="height:0;">¥11,800</div><span class="cpa-bar-label">22</span></div>
-        
-        <div class="cpa-bar-col"><div class="cpa-bar-fill cpa-bar-fill--yellow" data-height="47.1%" style="height:0;">¥11,253</div><span class="cpa-bar-label">23</span></div>
-        
-      </div>
-      <div class="cpa-legend">
-        <div class="cpa-legend__item"><div class="cpa-legend__dot" style="background:#059669"></div><span>&le; &yen;8,000</span></div>
-        <div class="cpa-legend__item"><div class="cpa-legend__dot" style="background:#D97706"></div><span>&le; &yen;12,000</span></div>
-        <div class="cpa-legend__item"><div class="cpa-legend__dot" style="background:#DC2626"></div><span>&gt; &yen;12,000</span></div>
-      </div>
-
-    </div>
-
-    <!-- Panel 2: Campaign Proposal -->
-    <div class="heatmap-panel" id="proposal-panel">
-
-      <div class="section-heading animate-on-scroll">
-        <span class="section-heading__badge">5-4</span>
-        <h3>ZONE&#x5206;&#x985E;&#xFF1A;&#x914D;&#x4FE1;&#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;&#x30AE;&#x30E3;&#x30C3;&#x30D7;</h3>
-      </div>
-      <div class="zone-grid animate-on-scroll">
-        
-        <div class="zone-card zone-card--A">
-          <div class="zone-card__header">
-            <span class="zone-card__badge zone-card__badge--A">ZONE A</span>
-            <span class="zone-card__title">&#x6700;&#x512A;&#x5148;&#x62E1;&#x5927;</span>
-          </div>
-          <div class="zone-card__detail">
-            &#x6642;&#x9593;&#x5E2F;: <span class="zone-card__stat">0-1時, 4時, 6時, 11-12時</span><br>
-            &#x30AE;&#x30E3;&#x30C3;&#x30D7;CV: <span class="zone-card__stat">432</span> &#x4EF6; / &#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;: <span class="zone-card__stat">18.9%</span>
-          </div>
-        </div>
-        
-        <div class="zone-card zone-card--B">
-          <div class="zone-card__header">
-            <span class="zone-card__badge zone-card__badge--B">ZONE B</span>
-            <span class="zone-card__title">&#x62E1;&#x5927;&#x63A8;&#x5968;</span>
-          </div>
-          <div class="zone-card__detail">
-            &#x6642;&#x9593;&#x5E2F;: <span class="zone-card__stat">2-3時, 5時, 7-8時, 13時</span><br>
-            &#x30AE;&#x30E3;&#x30C3;&#x30D7;CV: <span class="zone-card__stat">347</span> &#x4EF6; / &#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;: <span class="zone-card__stat">20.2%</span>
-          </div>
-        </div>
-        
-        <div class="zone-card zone-card--C">
-          <div class="zone-card__header">
-            <span class="zone-card__badge zone-card__badge--C">ZONE C</span>
-            <span class="zone-card__title">&#x73FE;&#x72B6;&#x7DAD;&#x6301;</span>
-          </div>
-          <div class="zone-card__detail">
-            &#x6642;&#x9593;&#x5E2F;: <span class="zone-card__stat">9-10時, 14時, 21-23時</span><br>
-            &#x30AE;&#x30E3;&#x30C3;&#x30D7;CV: <span class="zone-card__stat">270</span> &#x4EF6; / &#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;: <span class="zone-card__stat">17.4%</span>
-          </div>
-        </div>
-        
-        <div class="zone-card zone-card--D">
-          <div class="zone-card__header">
-            <span class="zone-card__badge zone-card__badge--D">ZONE D</span>
-            <span class="zone-card__title">&#x4F4E;&#x512A;&#x5148;</span>
-          </div>
-          <div class="zone-card__detail">
-            &#x6642;&#x9593;&#x5E2F;: <span class="zone-card__stat">15-20時</span><br>
-            &#x30AE;&#x30E3;&#x30C3;&#x30D7;CV: <span class="zone-card__stat">62</span> &#x4EF6; / &#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;: <span class="zone-card__stat">22.1%</span>
-          </div>
-        </div>
-        
-      </div>
-
-      <div class="section-heading animate-on-scroll">
-        <span class="section-heading__badge">5-5</span>
-        <h3>&#x63D0;&#x6848;&#x30AD;&#x30E3;&#x30F3;&#x30DA;&#x30FC;&#x30F3;&#x8A2D;&#x5B9A;</h3>
-      </div>
-      <div class="insight-card animate-on-scroll">
-        <span class="insight-card__icon">&#x1F4A1;</span>
-        <span class="insight-card__text">
-          ZONE-A&#x306E;&#x6642;&#x9593;&#x5E2F;&#x306F;&#x5168;&#x30C1;&#x30E3;&#x30CD;&#x30EB;CV&#x304C;&#x591A;&#x3044;&#x306E;&#x306B;&#x81EA;&#x793E;&#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;&#x304C;&#x4F4E;&#x3044;&#x30BE;&#x30FC;&#x30F3;&#x3067;&#x3059;&#x3002;
-          &#x5165;&#x672D;&#x5F37;&#x5316;&#x307E;&#x305F;&#x306F;&#x5C02;&#x7528;&#x30AD;&#x30E3;&#x30F3;&#x30DA;&#x30FC;&#x30F3;&#x3067;&#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;&#x62E1;&#x5927;&#x3092;&#x63A8;&#x5968;&#x3057;&#x307E;&#x3059;&#x3002;
-          &#x76EE;&#x6A19;CPA: &yen;8,000 / &#x5165;&#x672D;&#x6226;&#x7565;: &#x30B3;&#x30F3;&#x30D0;&#x30FC;&#x30B8;&#x30E7;&#x30F3;&#x5024;&#x306E;&#x6700;&#x5927;&#x5316;
-        </span>
-      </div>
-
-      <div class="animate-on-scroll" style="overflow-x:auto;">
-        <table class="data-table">
-          <thead><tr><th>&#x6642;&#x9593;&#x5E2F;</th><th class="text-center">ZONE</th><th class="text-center">&#x5168;CV</th><th class="text-center">&#x81EA;&#x793E;CV</th><th class="text-center">&#x30AE;&#x30E3;&#x30C3;&#x30D7;</th><th class="text-center">&#x30AB;&#x30D0;&#x30EC;&#x30C3;&#x30B8;</th></tr></thead>
-          <tbody>
-            
-            <tr>
-              <td class="font-bold">0:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">90</td>
-              <td class="text-center">20</td>
-              <td class="text-center font-bold text-red">70</td>
-              <td class="text-center">22.2%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">1:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">101</td>
-              <td class="text-center">21</td>
-              <td class="text-center font-bold text-red">80</td>
-              <td class="text-center">20.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">2:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">82</td>
-              <td class="text-center">27</td>
-              <td class="text-center font-bold text-red">55</td>
-              <td class="text-center">32.9%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">3:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">65</td>
-              <td class="text-center">9</td>
-              <td class="text-center font-bold text-red">56</td>
-              <td class="text-center">13.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">4:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">95</td>
-              <td class="text-center">17</td>
-              <td class="text-center font-bold text-red">78</td>
-              <td class="text-center">17.9%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">5:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">69</td>
-              <td class="text-center">11</td>
-              <td class="text-center font-bold text-red">58</td>
-              <td class="text-center">15.9%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">6:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">78</td>
-              <td class="text-center">16</td>
-              <td class="text-center font-bold text-red">62</td>
-              <td class="text-center">20.5%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">7:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">71</td>
-              <td class="text-center">16</td>
-              <td class="text-center font-bold text-red">55</td>
-              <td class="text-center">22.5%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">8:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">75</td>
-              <td class="text-center">13</td>
-              <td class="text-center font-bold text-red">62</td>
-              <td class="text-center">17.3%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">9:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">58</td>
-              <td class="text-center">8</td>
-              <td class="text-center font-bold text-red">50</td>
-              <td class="text-center">13.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">10:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">67</td>
-              <td class="text-center">12</td>
-              <td class="text-center font-bold text-red">55</td>
-              <td class="text-center">17.9%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">11:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">88</td>
-              <td class="text-center">15</td>
-              <td class="text-center font-bold text-red">73</td>
-              <td class="text-center">17.0%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">12:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--A" style="font-size:0.65rem;padding:0.1rem 0.4rem;">A</span></td>
-              <td class="text-center">81</td>
-              <td class="text-center">12</td>
-              <td class="text-center font-bold text-red">69</td>
-              <td class="text-center">14.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">13:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--B" style="font-size:0.65rem;padding:0.1rem 0.4rem;">B</span></td>
-              <td class="text-center">75</td>
-              <td class="text-center">14</td>
-              <td class="text-center font-bold text-red">61</td>
-              <td class="text-center">18.7%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">14:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">54</td>
-              <td class="text-center">8</td>
-              <td class="text-center font-bold text-red">46</td>
-              <td class="text-center">14.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">15:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">29</td>
-              <td class="text-center">7</td>
-              <td class="text-center font-bold text-red">22</td>
-              <td class="text-center">24.1%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">16:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">17</td>
-              <td class="text-center">6</td>
-              <td class="text-center font-bold text-red">11</td>
-              <td class="text-center">35.3%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">17:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">10</td>
-              <td class="text-center">2</td>
-              <td class="text-center font-bold text-red">8</td>
-              <td class="text-center">20.0%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">18:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">5</td>
-              <td class="text-center">1</td>
-              <td class="text-center font-bold ">4</td>
-              <td class="text-center">20.0%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">19:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">8</td>
-              <td class="text-center">2</td>
-              <td class="text-center font-bold text-red">6</td>
-              <td class="text-center">25.0%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">20:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--D" style="font-size:0.65rem;padding:0.1rem 0.4rem;">D</span></td>
-              <td class="text-center">12</td>
-              <td class="text-center">1</td>
-              <td class="text-center font-bold text-red">11</td>
-              <td class="text-center">8.3%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">21:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">32</td>
-              <td class="text-center">3</td>
-              <td class="text-center font-bold text-red">29</td>
-              <td class="text-center">9.4%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">22:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">52</td>
-              <td class="text-center">15</td>
-              <td class="text-center font-bold text-red">37</td>
-              <td class="text-center">28.8%</td>
-            </tr>
-            
-            <tr>
-              <td class="font-bold">23:00</td>
-              <td class="text-center"><span class="zone-card__badge zone-card__badge--C" style="font-size:0.65rem;padding:0.1rem 0.4rem;">C</span></td>
-              <td class="text-center">66</td>
-              <td class="text-center">13</td>
-              <td class="text-center font-bold text-red">53</td>
-              <td class="text-center">19.7%</td>
-            </tr>
-            
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-  </div></div>
 </section>
 
+<div class="divider"></div>
 
-<!-- FOOTER -->
-<footer class="production-notes">
-  <div class="production-notes__logo">1900film Data Intelligence</div>
-  <div class="production-notes__item">Generated: 2026-03-12 (Week 11)</div>
-  <div class="production-notes__item">Powered by Claude Code &mdash; Weekly Automated Report</div>
+<!-- ===== SECTION 3: HYBRID PROPOSAL ===== -->
+<section class="section">
+  <span class="section-label">Red Team Proposal</span>
+  <h2>ハイブリッド戦略「B+C融合」</h2>
+  <p class="section-desc">戦略BのLayer 1（無駄排除）を即日実行 → 戦略CのTIER構造を既存キャンペーンのAGレベルで実装 → CPA安定後に段階的ボリューム拡大。</p>
+
+  <div class="phase-timeline">
+    <!-- Phase 0 -->
+    <div class="phase-item">
+      <div class="phase-header">
+        <div class="phase-name" style="color: var(--accent-red);">Phase 0: 無駄排除（即日）</div>
+        <div class="phase-date">3/14（金）AM &#8212; 所要1時間</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="phase-kpi">
+          <div class="pk-value" style="color: var(--accent-emerald);">-19%</div>
+          <div class="pk-label">CPA改善</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">~0</div>
+          <div class="pk-label">CV損失</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value" style="color: var(--accent-emerald);">¥8,600</div>
+          <div class="pk-label">改善後CPA</div>
+        </div>
+      </div>
+      <ul class="action-list">
+        <li><strong>Demand Gen即時停止</strong> &#8212; CV 0で死に金。理由なし</li>
+        <li><strong>602__老眼 PAUSED</strong> &#8212; CPA ¥51,180。救済不能</li>
+        <li><strong>604__眼科医 PAUSED</strong> &#8212; CV 0。予算漏出</li>
+        <li><strong>502__単ワード PAUSED</strong> &#8212; CV 0。漏出停止</li>
+        <li><strong>503__効果 PAUSED</strong> &#8212; CV 0。漏出停止</li>
+        <li><strong>TABLET -100%（全CP）</strong> &#8212; 全AG CV 0確認済</li>
+      </ul>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-item">
+      <div class="phase-header">
+        <div class="phase-name" style="color: var(--accent-coral);">Phase 1: 効率基盤構築</div>
+        <div class="phase-date">3/15-3/21（7日間）</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="phase-kpi">
+          <div class="pk-value" style="color: var(--accent-coral);">16</div>
+          <div class="pk-label">日CV目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥8,000</div>
+          <div class="pk-label">CPA目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥128K</div>
+          <div class="pk-label">日COST</div>
+        </div>
+      </div>
+      <ul class="action-list">
+        <li><strong>600 coreKW 日予算 ¥26.4K→¥40K</strong>（+51%）&#8212; 603/605に集中</li>
+        <li><strong>603__視力 tCPA ¥7,000→¥7,500</strong> &#8212; IS改善のためtCPA引上げ（ランク不足対策）</li>
+        <li><strong>601__ルテイン tCPA ¥9,500→¥8,500</strong> &#8212; CPA圧縮方向</li>
+        <li><strong>500 GEN 日予算 ¥46K→¥60K</strong>（+30%）&#8212; 501集中</li>
+        <li><strong>P-Maxにブランド除外追加</strong> &#8212; Searchカニバリ防止</li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-item">
+      <div class="phase-header">
+        <div class="phase-name" style="color: var(--accent-amber);">Phase 2: ボリューム拡大</div>
+        <div class="phase-date">3/22-3/28（7日間）</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="phase-kpi">
+          <div class="pk-value" style="color: var(--accent-amber);">25</div>
+          <div class="pk-label">日CV目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥7,500</div>
+          <div class="pk-label">CPA目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥188K</div>
+          <div class="pk-label">日COST</div>
+        </div>
+      </div>
+      <ul class="action-list">
+        <li><strong>Phase 1のCPA実績を必ず確認してから実行</strong></li>
+        <li>CPA ≤ ¥8,000 → 600日予算¥60K、500日予算¥85K、P-Max¥30K</li>
+        <li>CPA > ¥8,000 → 予算据え置き。tCPA微調整のみ</li>
+        <li>CPA ≤ ¥7,500 かつ 消化率>90% → 700__インテントマッチ再開を検討</li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-item">
+      <div class="phase-header">
+        <div class="phase-name" style="color: var(--accent-emerald);">Phase 3: ラストスパート</div>
+        <div class="phase-date">3/29-3/31（3日間）</div>
+      </div>
+      <div class="phase-kpis">
+        <div class="phase-kpi">
+          <div class="pk-value" style="color: var(--accent-emerald);">30</div>
+          <div class="pk-label">日CV目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥7,300</div>
+          <div class="pk-label">CPA目標</div>
+        </div>
+        <div class="phase-kpi">
+          <div class="pk-value">¥219K</div>
+          <div class="pk-label">日COST</div>
+        </div>
+      </div>
+      <ul class="action-list">
+        <li><strong>大幅変更禁止</strong> &#8212; Smart Bidding安定維持が最優先</li>
+        <li>3月末はCPC上昇シーズン。tCPA据え置きで入札コントロール</li>
+        <li>予算微調整のみ（Phase 2実績に基づき±10%）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECTION 4: SCENARIOS ===== -->
+<section class="section">
+  <span class="section-label">Forecast</span>
+  <h2>シナリオ別予測</h2>
+
+  <div class="scenario-grid">
+    <div class="scenario-card">
+      <h4>悲観シナリオ</h4>
+      <div class="sc-cv" style="color: var(--accent-red);">280 <span style="font-size: 0.9rem;">CV</span></div>
+      <div class="sc-cpa">CPA ¥8,500 / COST ¥2.38M</div>
+      <div class="sc-prob">確率 25%</div>
+    </div>
+    <div class="scenario-card highlight">
+      <h4>標準シナリオ（最尤）</h4>
+      <div class="sc-cv" style="color: var(--accent-blue);">385 <span style="font-size: 0.9rem;">CV</span></div>
+      <div class="sc-cpa">CPA ¥7,623 / COST ¥2.93M</div>
+      <div class="sc-prob">確率 50%</div>
+    </div>
+    <div class="scenario-card">
+      <h4>楽観シナリオ</h4>
+      <div class="sc-cv" style="color: var(--accent-emerald);">500 <span style="font-size: 0.9rem;">CV</span></div>
+      <div class="sc-cpa">CPA ¥7,200 / COST ¥3.60M</div>
+      <div class="sc-prob">確率 25%</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECTION 5: HONEST VERDICT ===== -->
+<section class="section">
+  <div class="honest-box">
+    <h3>Red Teamの正直な結論</h3>
+    <div class="big-number">10-15%</div>
+    <div class="big-label">CV 600 + CPA ¥7,000 の同時達成確率</div>
+    <p class="explanation">18日間という期間制約の中で、CV 6.3倍とCPA -34%を同時に達成するのは極めて困難。<br><strong>どちらかを優先する意思決定が必要。</strong></p>
+  </div>
+
+  <div class="choice-grid">
+    <div class="choice-card recommended">
+      <div class="choice-label">推奨 &#8212; CPA優先</div>
+      <h4>効率を固めてから攻める</h4>
+      <div class="range" style="color: var(--accent-emerald);">CV 350-450</div>
+      <div class="range" style="font-size: 1.1rem; color: var(--text-secondary);">CPA ¥7,000-7,500</div>
+      <div class="note" style="margin-top: 1rem;">戦略B路線。まず無駄を止めてCPA ¥7,000圏内を確保。<br>4月以降のスケール基盤が手に入る。</div>
+    </div>
+    <div class="choice-card">
+      <div class="choice-label">OPTION &#8212; CV優先</div>
+      <h4>量を取りにいく</h4>
+      <div class="range" style="color: var(--accent-coral);">CV 450-550</div>
+      <div class="range" style="font-size: 1.1rem; color: var(--text-secondary);">CPA ¥8,000-9,000</div>
+      <div class="note" style="margin-top: 1rem;">戦略A路線（IS前提修正版）。tCPA引上げでISを獲りにいく。<br>CPA超過リスクを許容する必要あり。</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECTION 6: IMMEDIATE ACTIONS ===== -->
+<section class="section">
+  <span class="section-label">Action Plan</span>
+  <h2>3/14（金）即日アクション</h2>
+  <p class="section-desc">どの戦略を選んでも、以下の6アクションは全案共通。明日の午前中に完了させるべき「ノーリスク施策」。</p>
+
+  <div class="checklist">
+    <h3>&#9889; 即日チェックリスト（3案共通）</h3>
+    <div class="check-item urgent">
+      <div class="check-icon">!</div>
+      <div class="check-text"><strong>Demand Gen停止</strong> &#8212; ¥11,165/日の完全な死に金を即回収。CV 0で継続理由なし</div>
+      <div class="check-tag day1">3/14 AM</div>
+    </div>
+    <div class="check-item urgent">
+      <div class="check-icon">!</div>
+      <div class="check-text"><strong>602__老眼 PAUSED</strong> &#8212; CPA ¥51,180（目標の7.3倍）。将来LP改善後に再開可</div>
+      <div class="check-tag day1">3/14 AM</div>
+    </div>
+    <div class="check-item urgent">
+      <div class="check-icon">!</div>
+      <div class="check-text"><strong>604__眼科医 PAUSED</strong> &#8212; 12日間CV 0。¥4,019消化のみ</div>
+      <div class="check-tag day1">3/14 AM</div>
+    </div>
+    <div class="check-item urgent">
+      <div class="check-icon">!</div>
+      <div class="check-text"><strong>502__単ワード + 503__効果 PAUSED</strong> &#8212; 両AG合計CV 0。¥10,078の漏出停止</div>
+      <div class="check-tag day1">3/14 AM</div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-amber); color: var(--accent-amber);">!</div>
+      <div class="check-text"><strong>TABLET -100%（全キャンペーン）</strong> &#8212; 全AG CV 0確認済み。効果は微小だが確実</div>
+      <div class="check-tag day1">3/14 AM</div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-blue); color: var(--accent-blue);">!</div>
+      <div class="check-text"><strong>P-Maxにブランド除外追加</strong> &#8212; Search面でのカニバリを即時防止</div>
+      <div class="check-tag day1">3/14 PM</div>
+    </div>
+  </div>
+
+  <div class="checklist" style="margin-top: 1.5rem;">
+    <h3>&#128203; Phase 1 アクション（3/15-3/21）</h3>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-amber);">&#8594;</div>
+      <div class="check-text"><strong>600 coreKW 日予算 ¥26,400→¥40,000</strong> &#8212; 603/605への集中投下開始</div>
+      <div class="check-tag week1">Week 1</div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-amber);">&#8594;</div>
+      <div class="check-text"><strong>603__視力 tCPA ¥7,000→¥7,500</strong> &#8212; ランク改善のためtCPA引上げ（盲点対策）</div>
+      <div class="check-tag week1">Week 1</div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-amber);">&#8594;</div>
+      <div class="check-text"><strong>601__ルテイン tCPA ¥9,500→¥8,500</strong> &#8212; 段階的CPA圧縮開始</div>
+      <div class="check-tag week1">Week 1</div>
+    </div>
+    <div class="check-item">
+      <div class="check-icon" style="border-color: var(--accent-amber);">&#8594;</div>
+      <div class="check-text"><strong>500 GEN 日予算 ¥46,000→¥60,000</strong> &#8212; 501に集中して消化状況を観察</div>
+      <div class="check-tag week1">Week 1</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECTION 7: WHY THIS WORKS ===== -->
+<section class="section">
+  <span class="section-label">Rationale</span>
+  <h2>なぜこの施策順序なのか</h2>
+
+  <div class="waterfall">
+    <div class="wf-row">
+      <div class="wf-label">現状CPA</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 100%; background: linear-gradient(90deg, var(--accent-red), #F87171);">¥10,643</div>
+      </div>
+      <div class="wf-value">¥10,643</div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-label">DG停止 (-11.4%)</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 88.6%; background: linear-gradient(90deg, var(--accent-coral), #FB923C);">-¥1,211</div>
+      </div>
+      <div class="wf-value">¥9,432</div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-label">0CV AG停止 (-7.3%)</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 81.3%; background: linear-gradient(90deg, var(--accent-amber), #FBBF24);">-¥780</div>
+      </div>
+      <div class="wf-value">¥8,652</div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-label">低CPA AG集中 (-5%)</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 76.3%; background: linear-gradient(90deg, #84CC16, #A3E635);">-¥552</div>
+      </div>
+      <div class="wf-value">¥8,100</div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-label">tCPA段階調整 (-5%)</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 71.3%; background: linear-gradient(90deg, var(--accent-emerald), #34D399);">-¥500</div>
+      </div>
+      <div class="wf-value">¥7,600</div>
+    </div>
+    <div class="wf-row" style="opacity: 0.6;">
+      <div class="wf-label" style="color: var(--text-muted);">目標CPA</div>
+      <div class="wf-bar-container">
+        <div class="wf-bar" style="width: 65.8%; background: linear-gradient(90deg, var(--accent-blue), #60A5FA); border: 2px dashed rgba(255,255,255,0.3);">TARGET</div>
+      </div>
+      <div class="wf-value" style="color: var(--accent-blue);">¥7,000</div>
+    </div>
+  </div>
+
+  <div style="background: var(--bg-card); border-radius: 16px; padding: 2rem; margin-top: 2rem; border: 1px solid var(--border);">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">核心ロジック</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+      <div>
+        <div style="font-size: 0.8rem; color: var(--accent-red); font-weight: 700; margin-bottom: 0.5rem;">Step 1: 出血を止める</div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary);">CV 0のキャンペーン・AGを停止。¥25,262/日の無駄コストを即時回収。CPA -19%改善、CV損失ゼロ。</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--accent-coral); font-weight: 700; margin-bottom: 0.5rem;">Step 2: 効率を証明する</div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary);">603/605の低CPA AGに予算集中。7日間でCPA ¥8,000以下を実証してからスケール判断。データに基づく意思決定。</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: 700; margin-bottom: 0.5rem;">Step 3: 根拠を持って攻める</div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary);">Phase 1のCPA実績に基づきPhase 2の予算配分を決定。ISはランク起因なのでtCPA調整でIS改善を図る。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SECTION 8: CV600 REQUIRES ===== -->
+<section class="section">
+  <span class="section-label">Beyond Ads</span>
+  <h2>CV 600到達に広告運用だけでは不十分</h2>
+  <p class="section-desc">広告運用の最適化で到達できるのは最大400-500CV。残りはLP改善・RSA最適化・インテントマッチ再開の3つが必要。</p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>施策</th>
+        <th>種別</th>
+        <th class="num">追加CV見込</th>
+        <th class="num">効果発現</th>
+        <th>条件</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>LP改善（CVR +30-50%）</strong></td>
+        <td style="color: var(--accent-purple);">必須</td>
+        <td class="num green">+90-150</td>
+        <td class="num">即時</td>
+        <td>LP制作リソース必要</td>
+      </tr>
+      <tr>
+        <td><strong>RSA 2-3パターン追加</strong></td>
+        <td style="color: var(--accent-blue);">推奨</td>
+        <td class="num green">+30-50</td>
+        <td class="num">14日後</td>
+        <td>効果は4月以降</td>
+      </tr>
+      <tr>
+        <td><strong>700 インテントマッチ再開</strong></td>
+        <td style="color: var(--accent-amber);">条件付</td>
+        <td class="num green">+50-100</td>
+        <td class="num">7日後</td>
+        <td>Phase 2以降、CPA確認後</td>
+      </tr>
+      <tr>
+        <td><strong>予算上方修正</strong></td>
+        <td style="color: var(--text-muted);">任意</td>
+        <td class="num">-</td>
+        <td class="num">-</td>
+        <td>CPA ¥7,500なら¥4.5M必要</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <p>Red Team Review | LUTEIN 3月後半戦略 | 2026-03-13</p>
+  <p style="margin-top: 0.5rem;">Data: BigQuery trans-grid-245207.g_ads_1900film2 | Generated by <a href="https://claude.com/claude-code" target="_blank">Claude Code</a></p>
+  <p style="margin-top: 0.5rem; color: var(--text-muted);">1900film Weekly Report</p>
 </footer>
 
-<script>
-(function(){
-  'use strict';
-  var navLinks=document.querySelectorAll('.main-nav__link');
-  var sections=document.querySelectorAll('.cover,.chapter');
-  var nav=document.getElementById('mainNav');
-  var sectionObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
-        var id=entry.target.id;
-        navLinks.forEach(function(link){
-          link.classList.remove('active');
-          if(link.getAttribute('href')==='#'+id) link.classList.add('active');
-        });
-      }
-    });
-  },{rootMargin:'-20% 0px -70% 0px',threshold:0});
-  sections.forEach(function(s){sectionObserver.observe(s);});
-  window.addEventListener('scroll',function(){
-    if(window.scrollY>10) nav.classList.add('scrolled');
-    else nav.classList.remove('scrolled');
-  });
-  var animElements=document.querySelectorAll('.animate-on-scroll');
-  var animObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){entry.target.classList.add('visible');animObserver.unobserve(entry.target);}
-    });
-  },{rootMargin:'0px 0px -80px 0px',threshold:0.1});
-  animElements.forEach(function(el){animObserver.observe(el);});
-  var hamburger=document.getElementById('hamburger');
-  var navLinksContainer=document.getElementById('navLinks');
-  if(hamburger&&navLinksContainer){
-    hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navLinksContainer.classList.toggle('open');});
-    navLinksContainer.querySelectorAll('a').forEach(function(link){
-      link.addEventListener('click',function(){hamburger.classList.remove('open');navLinksContainer.classList.remove('open');});
-    });
-  }
-  document.querySelectorAll('a[href^="#"]').forEach(function(anchor){
-    anchor.addEventListener('click',function(e){
-      e.preventDefault();
-      var targetId=this.getAttribute('href').substring(1);
-      var targetElement=document.getElementById(targetId);
-      if(targetElement){
-        var navHeight=nav.offsetHeight;
-        var targetPosition=targetElement.getBoundingClientRect().top+window.pageYOffset-navHeight;
-        window.scrollTo({top:targetPosition,behavior:'smooth'});
-      }
-    });
-  });
-  function parseStatValue(text){
-    var match=text.match(/^([^\d\-]*)([\d,]+\.?\d*)(.*)/);
-    if(!match) return null;
-    return{prefix:match[1]||'',number:parseFloat(match[2].replace(/,/g,'')),decimals:(match[2].indexOf('.')!==-1)?match[2].split('.')[1].length:0,suffix:match[3]||'',hasCommas:match[2].indexOf(',')!==-1,raw:text};
-  }
-  function formatNumber(num,decimals,hasCommas){
-    var fixed=num.toFixed(decimals);
-    if(hasCommas){var parts=fixed.split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');return parts.join('.');}
-    return fixed;
-  }
-  function animateCounter(element,parsed,duration){
-    var startTime=null;var target=parsed.number;
-    function step(timestamp){
-      if(!startTime) startTime=timestamp;
-      var elapsed=timestamp-startTime;
-      var progress=Math.min(elapsed/duration,1);
-      var eased=1-Math.pow(1-progress,3);
-      var current=eased*target;
-      element.textContent=parsed.prefix+formatNumber(current,parsed.decimals,parsed.hasCommas)+parsed.suffix;
-      if(progress<1) requestAnimationFrame(step);
-      else element.textContent=parsed.raw;
-    }
-    requestAnimationFrame(step);
-  }
-  var heroStatValues=document.querySelectorAll('.hero-stat__value');
-  heroStatValues.forEach(function(el){
-    var text=el.textContent.trim();
-    var parsed=parseStatValue(text);
-    if(parsed){el.setAttribute('data-target-value',text);el.setAttribute('data-parsed','true');}
-  });
-  var counterObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
-        var el=entry.target;
-        var text=el.getAttribute('data-target-value');
-        if(text&&el.getAttribute('data-parsed')==='true'){
-          var parsed=parseStatValue(text);
-          if(parsed) animateCounter(el,parsed,1200);
-        }
-        counterObserver.unobserve(el);
-      }
-    });
-  },{rootMargin:'0px 0px -50px 0px',threshold:0.2});
-  heroStatValues.forEach(function(el){if(el.getAttribute('data-parsed')==='true') counterObserver.observe(el);});
-  var pipelines=document.querySelectorAll('.visual-pipeline');
-  pipelines.forEach(function(pipeline){
-    var nodes=pipeline.querySelectorAll('.pipeline-node');
-    nodes.forEach(function(node,index){node.classList.add('animate-stagger');node.style.transitionDelay=(index*0.15)+'s';});
-  });
-  var pipelineObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
-        entry.target.querySelectorAll('.pipeline-node.animate-stagger').forEach(function(node){node.classList.add('visible');});
-        pipelineObserver.unobserve(entry.target);
-      }
-    });
-  },{rootMargin:'0px 0px -60px 0px',threshold:0.1});
-  pipelines.forEach(function(pipeline){pipelineObserver.observe(pipeline);});
-  /* Heatmap tab switching */
-  var heatmapTabs=document.querySelectorAll('.heatmap-tab');
-  heatmapTabs.forEach(function(tab){
-    tab.addEventListener('click',function(){
-      heatmapTabs.forEach(function(t){t.classList.remove('active');});
-      tab.classList.add('active');
-      document.querySelectorAll('.heatmap-panel').forEach(function(p){p.classList.remove('active');});
-      var target=document.getElementById(tab.getAttribute('data-target'));
-      if(target) target.classList.add('active');
-    });
-  });
-  /* Heatmap view toggle (all-channel vs 1900) */
-  var viewBtns=document.querySelectorAll('.heatmap-view-btn');
-  viewBtns.forEach(function(btn){
-    btn.addEventListener('click',function(){
-      viewBtns.forEach(function(b){b.classList.remove('active-total','active-1900');});
-      var view=btn.getAttribute('data-view');
-      btn.classList.add(view==='total'?'active-total':'active-1900');
-      var cells=document.querySelectorAll('.heatmap-cell[data-cv-total]');
-      cells.forEach(function(cell){
-        if(view==='total'){
-          var val=cell.getAttribute('data-cv-total');
-          var intensity=parseFloat(cell.getAttribute('data-intensity-total'));
-          cell.textContent=val;
-          cell.style.background='rgba(245,158,11,'+intensity+')';
-          cell.style.color=intensity>0.5?'#FFF':'#92400E';
-        }else{
-          var val=cell.getAttribute('data-cv-1900');
-          var intensity=parseFloat(cell.getAttribute('data-intensity-1900'));
-          cell.textContent=val;
-          cell.style.background='rgba(20,184,166,'+intensity+')';
-          cell.style.color=intensity>0.5?'#FFF':'#0F766E';
-        }
-      });
-      var legendBar=document.getElementById('legendBar');
-      if(legendBar){
-        if(view==='total'){legendBar.className='heatmap-legend__bar heatmap-legend__bar--amber';}
-        else{legendBar.className='heatmap-legend__bar heatmap-legend__bar--teal';}
-      }
-    });
-  });
-  var hbarFills=document.querySelectorAll('.hbar-fill[data-width]');
-  var hbarObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){entry.target.style.width=entry.target.getAttribute('data-width');hbarObserver.unobserve(entry.target);}
-    });
-  },{rootMargin:'0px 0px -40px 0px',threshold:0.1});
-  hbarFills.forEach(function(fill){fill.style.width='0%';hbarObserver.observe(fill);});
-  var vbarFills=document.querySelectorAll('.vbar-fill[data-height]');
-  var vbarObserver=new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){entry.target.style.height=entry.target.getAttribute('data-height');vbarObserver.unobserve(entry.target);}
-    });
-  },{rootMargin:'0px 0px -40px 0px',threshold:0.1});
-  vbarFills.forEach(function(fill){fill.style.height='0';vbarObserver.observe(fill);});
-  /* CPA bar animation */
-  var cpaFills=document.querySelectorAll('.cpa-bar-fill[data-height]');
-  cpaFills.forEach(function(fill){fill.style.height='0';vbarObserver.observe(fill);});
-})();
-</script>
 </body>
 </html>
