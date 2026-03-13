@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUTEIN CVロスト先 競合MECE分析 | sGTM lutein_cv Deep-Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0F172A;
+  --bg-card: #1E293B;
+  --bg-card-hover: #273549;
+  --accent-red: #EF4444;
+  --accent-coral: #F97316;
+  --accent-blue: #3B82F6;
+  --accent-emerald: #10B981;
+  --accent-purple: #8B5CF6;
+  --accent-amber: #F59E0B;
+  --accent-cyan: #06B6D4;
+  --accent-pink: #EC4899;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #334155;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Noto Sans JP', 'Inter', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Hero */
+.hero {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  position: relative;
+  background: radial-gradient(ellipse at 50% 30%, rgba(239,68,68,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 70%, rgba(249,115,22,0.08) 0%, transparent 50%);
+}
+.hero-content { max-width: 960px; }
+.hero-badge {
+  display: inline-block;
+  background: rgba(239,68,68,0.2);
+  color: var(--accent-red);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #F1F5F9, #EF4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+.hero-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  min-width: 130px;
+}
+.hero-stat .label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.hero-stat .value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+}
+.hero-stat .value.red { color: var(--accent-red); }
+.hero-stat .value.emerald { color: var(--accent-emerald); }
+.hero-stat .value.amber { color: var(--accent-amber); }
+.hero-stat .value.purple { color: var(--accent-purple); }
+.hero-stat .value.blue { color: var(--accent-blue); }
+.hero-stat .sub { font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* Back link */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-purple);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.2);
+  margin-bottom: 24px;
+  transition: all 0.2s;
+}
+.back-link:hover { background: rgba(139,92,246,0.2); }
+
+/* Section */
+.section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+.section-label {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.section-label.blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.section-label.red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+.section-label.emerald { background: rgba(16,185,129,0.15); color: var(--accent-emerald); }
+.section-label.purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+.section-label.amber { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.section-label.coral { background: rgba(249,115,22,0.15); color: var(--accent-coral); }
+.section h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.section .section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+/* Data Table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.data-table th {
+  background: rgba(30,41,59,0.8);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+}
+.data-table th.num { text-align: right; }
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(51,65,85,0.5);
+  font-family: 'Inter', sans-serif;
+}
+.data-table tr:hover td { background: var(--bg-card-hover); }
+.data-table .num { text-align: right; }
+.table-scroll {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.badge-high { display:inline-block; background:rgba(16,185,129,0.15); color:var(--accent-emerald); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; }
+.badge-mid { display:inline-block; background:rgba(245,158,11,0.15); color:var(--accent-amber); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; }
+.badge-low { display:inline-block; background:rgba(239,68,68,0.15); color:var(--accent-red); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; }
+
+/* Stacked Bar Chart */
+.stacked-chart {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  overflow-x: auto;
+}
+.stacked-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 280px;
+  min-width: 800px;
+}
+.stacked-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+.stacked-col {
+  width: 100%;
+  max-width: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.stacked-seg {
+  width: 100%;
+  min-height: 2px;
+  position: relative;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.stacked-seg:hover { opacity: 0.8; }
+.stacked-seg:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0F172A;
+  color: #F1F5F9;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  white-space: nowrap;
+  z-index: 10;
+  border: 1px solid var(--border);
+}
+.stacked-seg.s-1900 { background: var(--accent-blue); }
+.stacked-seg.s-rent { background: var(--accent-coral); }
+.stacked-seg.s-at { background: var(--accent-emerald); }
+.stacked-seg.s-so { background: var(--accent-purple); }
+.stacked-seg.s-direct { background: var(--accent-amber); }
+.stacked-seg.s-other { background: var(--text-muted); }
+.stacked-date {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  transform: rotate(-45deg);
+  white-space: nowrap;
+}
+.stacked-date.is-low { color: var(--accent-red); font-weight: 700; }
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.chart-legend span { display: flex; align-items: center; gap: 6px; }
+.chart-legend .dot-sm { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Verdict Grid */
+.verdict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+.verdict-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.verdict-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+.verdict-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+.verdict-badge.danger { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+.verdict-badge.warning { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.verdict-badge.info { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.verdict-card h3 { font-size: 1.1rem; margin-bottom: 16px; }
+.verdict-card .metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(51,65,85,0.3);
+  font-size: 0.85rem;
+}
+.verdict-card .metric-row .label { color: var(--text-secondary); }
+.verdict-card .metric-row .val { font-weight: 600; font-family: 'Inter'; }
+.verdict-card .metric-row .val.good { color: var(--accent-emerald); }
+.verdict-card .metric-row .val.bad { color: var(--accent-red); }
+.verdict-card .metric-row .val.warn { color: var(--accent-amber); }
+
+/* Waterfall / Share bars */
+.wf-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+.wf-label {
+  width: 150px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.wf-bar-container {
+  flex: 1;
+  height: 28px;
+  background: rgba(51,65,85,0.3);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.wf-bar {
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Inter';
+  transition: width 0.8s ease;
+}
+.wf-bar.blue { background: linear-gradient(90deg, rgba(59,130,246,0.5), rgba(59,130,246,0.8)); }
+.wf-bar.coral { background: linear-gradient(90deg, rgba(249,115,22,0.5), rgba(249,115,22,0.8)); }
+.wf-bar.emerald { background: linear-gradient(90deg, rgba(16,185,129,0.5), rgba(16,185,129,0.8)); }
+.wf-bar.purple { background: linear-gradient(90deg, rgba(139,92,246,0.5), rgba(139,92,246,0.8)); }
+.wf-bar.amber { background: linear-gradient(90deg, rgba(245,158,11,0.5), rgba(245,158,11,0.8)); }
+.wf-bar.muted { background: linear-gradient(90deg, rgba(100,116,139,0.5), rgba(100,116,139,0.8)); }
+.wf-val {
+  width: 100px;
+  text-align: right;
+  flex-shrink: 0;
+  font-family: 'Inter';
+  font-weight: 600;
+  margin-left: 8px;
+  font-size: 0.78rem;
+}
+
+/* Heatmap */
+.heatmap-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  padding: 20px;
+}
+.heatmap-grid {
+  display: grid;
+  gap: 3px;
+  font-size: 0.65rem;
+  min-width: 600px;
+}
+.heatmap-grid .h-header {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px 2px;
+}
+.heatmap-grid .h-row-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.heatmap-grid .h-cell {
+  text-align: center;
+  padding: 6px 2px;
+  border-radius: 4px;
+  font-family: 'Inter';
+  font-weight: 600;
+  font-size: 0.65rem;
+  transition: transform 0.15s;
+}
+.heatmap-grid .h-cell:hover { transform: scale(1.15); z-index: 1; }
+.h-cell.c-1900 { background: rgba(59,130,246,0.3); color: #93C5FD; }
+.h-cell.c-rent { background: rgba(249,115,22,0.3); color: #FDBA74; }
+.h-cell.c-at { background: rgba(16,185,129,0.3); color: #6EE7B7; }
+.h-cell.c-so { background: rgba(139,92,246,0.3); color: #C4B5FD; }
+.h-cell.c-other { background: rgba(100,116,139,0.2); color: #94A3B8; }
+.h-cell.c-empty { background: rgba(239,68,68,0.08); color: rgba(239,68,68,0.3); }
+
+/* Blindspot */
+.blindspot {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.blindspot::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.blindspot.red::before { background: linear-gradient(90deg, var(--accent-red), var(--accent-coral)); }
+.blindspot.blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+.blindspot-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.blindspot-tag.red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+.blindspot-tag.blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.blindspot h3 { font-size: 1.3rem; margin-bottom: 8px; }
+.blindspot p { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* Comparison */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.compare-col { background: var(--bg-card); }
+.compare-col:first-child { border-right: 1px solid var(--border); }
+.compare-header {
+  padding: 16px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.green { background: var(--accent-emerald); }
+.dot.red { background: var(--accent-red); }
+.compare-row {
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(51,65,85,0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.compare-row:hover { background: var(--bg-card-hover); }
+.compare-row .name { color: var(--text-secondary); font-size: 0.8rem; }
+.compare-row .val { font-family: 'Inter'; font-weight: 700; font-size: 0.9rem; }
+
+/* Summary box */
+.summary-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  margin: 32px 0;
+}
+.summary-box h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+.summary-box p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Checklist */
+.checklist { list-style: none; }
+.check-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.check-item .priority {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.check-item .priority.p1 { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+.check-item .priority.p2 { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.check-item .priority.p3 { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.check-item .text { font-size: 0.9rem; color: var(--text-secondary); }
+.check-item .text strong { color: var(--text-primary); }
+
+@media (max-width: 768px) {
+  .hero-stats { flex-direction: column; align-items: center; }
+  .verdict-grid { grid-template-columns: 1fr; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .wf-label { width: 100px; font-size: 0.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="hero-content">
+    <a href="lutein-cvr-analysis.html" class="back-link">&#8592; CVR Deep-Dive に戻る</a>
+    <div class="hero-badge">COMPETITIVE CV INTELLIGENCE</div>
+    <h1>当社のCVはどこに消えたか</h1>
+    <p class="hero-subtitle">sGTM lutein_cv 全1,717件のadcode解析 &mdash; LOW日に奪われたCVの行先をMECEに特定</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="label">当社シェア HIGH日</div>
+        <div class="value blue">20.8%</div>
+        <div class="sub">13.4 CV/日</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">当社シェア LOW日</div>
+        <div class="value red">16.4%</div>
+        <div class="sub">8.6 CV/日</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">シェア低下</div>
+        <div class="value red">-4.4pp</div>
+        <div class="sub">市場比 1.83倍の下落</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">推計ロスト</div>
+        <div class="value amber">~16件</div>
+        <div class="sub">LOW日7日間累計</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">最大受益者</div>
+        <div class="value purple">レントラ</div>
+        <div class="sub">+2.9pp シェア上昇</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-indicator">&#9660; Scroll to explore</div>
+</section>
+
+<!-- ========== SECTION 1: MECE Classification ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label blue">SECTION 01</div>
+  <h2>adcode MECE分類</h2>
+  <p class="section-desc">sGTMのlutein_cvイベント全2,309件（ユニークorder 1,717件）を広告主別に完全分類。URLの<code>?u=</code>パラメータがCV帰属先を決定。</p>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>サイトグループ</th>
+          <th>adcode内訳</th>
+          <th class="num">CV数</th>
+          <th class="num">シェア</th>
+          <th>性質</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong style="color:var(--accent-coral)">レントラックス</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">rent_a(438) rent_6666(126) rent_m(103) rent_s(3)</td>
+          <td class="num" style="font-weight:800;color:var(--accent-coral)">670</td>
+          <td class="num" style="font-weight:700">39.0%</td>
+          <td><span class="badge-low">ASP</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong style="color:var(--accent-emerald)">アクセストレード</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">accesstrade_s2(335)</td>
+          <td class="num" style="font-weight:800;color:var(--accent-emerald)">335</td>
+          <td class="num" style="font-weight:700">19.5%</td>
+          <td><span class="badge-low">ASP</span></td>
+        </tr>
+        <tr style="background:rgba(59,130,246,0.05)">
+          <td>3</td>
+          <td><strong style="color:var(--accent-blue)">1900film（当社）</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">1900_1(239) 1900_3(49) 1900_12(34)</td>
+          <td class="num" style="font-weight:800;color:var(--accent-blue)">322</td>
+          <td class="num" style="font-weight:700">18.8%</td>
+          <td><span class="badge-high">Google Ads</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong style="color:var(--accent-purple)">SO972系</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">so_972_2gli(191) so_972(39) so_972_p(26) so_li(11) 他</td>
+          <td class="num" style="font-weight:800;color:var(--accent-purple)">281</td>
+          <td class="num" style="font-weight:700">16.4%</td>
+          <td><span class="badge-mid">他社広告</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong style="color:var(--accent-amber)">ダイレクト</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">lutein(86)</td>
+          <td class="num" style="font-weight:800;color:var(--accent-amber)">86</td>
+          <td class="num" style="font-weight:700">5.0%</td>
+          <td>ブランド直接</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong>A8</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">a8(16)</td>
+          <td class="num" style="font-weight:800">16</td>
+          <td class="num">0.9%</td>
+          <td><span class="badge-low">ASP</span></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><strong>その他</strong></td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">ac_L(4) luteinefo(3)</td>
+          <td class="num" style="font-weight:800">7</td>
+          <td class="num">0.4%</td>
+          <td>-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:24px">
+    <div class="wf-row"><div class="wf-label">レントラックス</div><div class="wf-bar-container"><div class="wf-bar coral" style="width:39%">670</div></div><div class="wf-val" style="color:var(--accent-coral)">39.0%</div></div>
+    <div class="wf-row"><div class="wf-label">アクセストレード</div><div class="wf-bar-container"><div class="wf-bar emerald" style="width:19.5%">335</div></div><div class="wf-val" style="color:var(--accent-emerald)">19.5%</div></div>
+    <div class="wf-row"><div class="wf-label">1900film（当社）</div><div class="wf-bar-container"><div class="wf-bar blue" style="width:18.8%">322</div></div><div class="wf-val" style="color:var(--accent-blue)">18.8%</div></div>
+    <div class="wf-row"><div class="wf-label">SO972系</div><div class="wf-bar-container"><div class="wf-bar purple" style="width:16.4%">281</div></div><div class="wf-val" style="color:var(--accent-purple)">16.4%</div></div>
+    <div class="wf-row"><div class="wf-label">ダイレクト</div><div class="wf-bar-container"><div class="wf-bar amber" style="width:5%">86</div></div><div class="wf-val" style="color:var(--accent-amber)">5.0%</div></div>
+    <div class="wf-row"><div class="wf-label">A8+その他</div><div class="wf-bar-container"><div class="wf-bar muted" style="width:1.3%"></div></div><div class="wf-val">1.3%</div></div>
+  </div>
+</section>
+
+<!-- ========== SECTION 2: HIGH vs LOW ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label red">SECTION 02 &mdash; CORE FINDING</div>
+  <h2>HIGH日 vs LOW日 シェア変動</h2>
+  <p class="section-desc">市場全体が-19.6%下落する中、当社は-35.8%と市場の1.83倍の速度で下落。失われたシェアはレントラックス(+2.9pp)とSO972系(+1.2pp)に流出。</p>
+
+  <div class="table-scroll" style="margin-bottom:32px">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>サイトグループ</th>
+          <th class="num">HIGH日 CV/日</th>
+          <th class="num">HIGH日 シェア</th>
+          <th class="num">LOW日 CV/日</th>
+          <th class="num">LOW日 シェア</th>
+          <th class="num">シェア変化</th>
+          <th class="num">CV変化率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--accent-coral)">レントラックス</strong></td>
+          <td class="num">24.7</td>
+          <td class="num">38.2%</td>
+          <td class="num">21.4</td>
+          <td class="num" style="font-weight:700;color:var(--accent-coral)">41.1%</td>
+          <td class="num" style="font-weight:800;color:var(--accent-red)">+2.9pp</td>
+          <td class="num">-13.4%</td>
+        </tr>
+        <tr style="background:rgba(59,130,246,0.05)">
+          <td><strong style="color:var(--accent-blue)">1900film</strong></td>
+          <td class="num" style="font-weight:700;color:var(--accent-blue)">13.4</td>
+          <td class="num" style="font-weight:700;color:var(--accent-blue)">20.8%</td>
+          <td class="num" style="font-weight:700;color:var(--accent-red)">8.6</td>
+          <td class="num" style="font-weight:700;color:var(--accent-red)">16.4%</td>
+          <td class="num" style="font-weight:800;color:var(--accent-red)">-4.4pp</td>
+          <td class="num" style="font-weight:800;color:var(--accent-red)">-35.8%</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent-emerald)">アクセストレード</strong></td>
+          <td class="num">11.5</td>
+          <td class="num">17.8%</td>
+          <td class="num">9.0</td>
+          <td class="num">17.3%</td>
+          <td class="num">-0.5pp</td>
+          <td class="num">-21.7%</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent-purple)">SO972系</strong></td>
+          <td class="num">10.9</td>
+          <td class="num">16.9%</td>
+          <td class="num">9.4</td>
+          <td class="num" style="font-weight:700;color:var(--accent-purple)">18.1%</td>
+          <td class="num" style="font-weight:800;color:var(--accent-red)">+1.2pp</td>
+          <td class="num">-13.8%</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent-amber)">ダイレクト</strong></td>
+          <td class="num">3.4</td>
+          <td class="num">4.8%</td>
+          <td class="num">3.8</td>
+          <td class="num">5.2%</td>
+          <td class="num" style="color:var(--accent-emerald)">+0.4pp</td>
+          <td class="num" style="color:var(--accent-emerald)">+11.8%</td>
+        </tr>
+        <tr>
+          <td><strong>A8</strong></td>
+          <td class="num">1.5</td>
+          <td class="num">0.8%</td>
+          <td class="num">1.5</td>
+          <td class="num">1.6%</td>
+          <td class="num" style="color:var(--accent-red)">+0.8pp</td>
+          <td class="num">0.0%</td>
+        </tr>
+        <tr style="font-weight:700;border-top:2px solid var(--border)">
+          <td>合計</td>
+          <td class="num">65.4</td>
+          <td class="num">100%</td>
+          <td class="num" style="color:var(--accent-red)">52.4</td>
+          <td class="num">100%</td>
+          <td class="num">-</td>
+          <td class="num" style="color:var(--accent-red)">-19.6%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="blindspot red">
+    <div class="blindspot-tag red">CRITICAL FINDING</div>
+    <h3>当社の下落率は市場全体の1.83倍</h3>
+    <p>LOW日の市場CV減少は-19.6%だが、1900filmは-35.8%と不均衡に大きい。もし市場と同率で下落した場合、日平均10.8件のCVが見込めるが実際は8.6件。<strong>毎LOW日2.3件、7日間で約16件のCVがレントラックスとSO972系に流出</strong>している。</p>
+  </div>
+</section>
+
+<!-- ========== SECTION 3: Stacked Bar Chart ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label purple">SECTION 03</div>
+  <h2>日別CV構成比の推移</h2>
+  <p class="section-desc">30日間の全lutein_cv（ユニークorder基準）をサイトグループ別に積み上げ。赤字の日付がLOW日。1900film（青）の縮小とレントラックス（橙）の拡大が視覚的に明確。</p>
+
+  <div class="stacked-chart">
+    <div class="stacked-bars" id="stackedChart"></div>
+    <div class="chart-legend">
+      <span><div class="dot-sm" style="background:var(--accent-blue)"></div>1900film</span>
+      <span><div class="dot-sm" style="background:var(--accent-coral)"></div>レントラックス</span>
+      <span><div class="dot-sm" style="background:var(--accent-emerald)"></div>アクセストレード</span>
+      <span><div class="dot-sm" style="background:var(--accent-purple)"></div>SO972系</span>
+      <span><div class="dot-sm" style="background:var(--accent-amber)"></div>ダイレクト</span>
+      <span><div class="dot-sm" style="background:var(--text-muted)"></div>A8+他</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 4: Best vs Worst ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label coral">SECTION 04</div>
+  <h2>最高日 3/2 vs 最悪日 3/7</h2>
+  <p class="section-desc">CVR 2.13%の最高日と0.49%の最悪日を直接比較。レントラックスのシェアが33.8%→52.6%に急膨張し、1900filmは25.0%→13.2%に半減。</p>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="compare-header"><div class="dot green"></div>3/2（CVR 2.13%）合計68件</div>
+      <div class="compare-row"><div class="name">レントラックス</div><div class="val" style="color:var(--accent-coral)">23件 (33.8%)</div></div>
+      <div class="compare-row"><div class="name" style="color:var(--accent-blue);font-weight:700">1900film</div><div class="val" style="color:var(--accent-blue)">17件 (25.0%)</div></div>
+      <div class="compare-row"><div class="name">アクセストレード</div><div class="val" style="color:var(--accent-emerald)">13件 (19.1%)</div></div>
+      <div class="compare-row"><div class="name">SO972系</div><div class="val" style="color:var(--accent-purple)">8件 (11.8%)</div></div>
+      <div class="compare-row"><div class="name">ダイレクト</div><div class="val" style="color:var(--accent-amber)">7件 (10.3%)</div></div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-header"><div class="dot red"></div>3/7（CVR 0.49%）合計38件</div>
+      <div class="compare-row"><div class="name">レントラックス</div><div class="val" style="color:var(--accent-red)">20件 (52.6%)</div></div>
+      <div class="compare-row"><div class="name">SO972系</div><div class="val" style="color:var(--accent-red)">8件 (21.1%)</div></div>
+      <div class="compare-row"><div class="name" style="color:var(--accent-blue);font-weight:700">1900film</div><div class="val" style="color:var(--accent-red)">5件 (13.2%)</div></div>
+      <div class="compare-row"><div class="name">アクセストレード</div><div class="val">4件 (10.5%)</div></div>
+      <div class="compare-row"><div class="name">A8</div><div class="val">1件 (2.6%)</div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px">
+    <div class="verdict-grid">
+      <div class="verdict-card">
+        <div class="verdict-badge danger">SHARE SHIFT</div>
+        <h3>レントラックス: +18.8pp</h3>
+        <div class="metric-row"><div class="label">3/2シェア</div><div class="val">33.8%</div></div>
+        <div class="metric-row"><div class="label">3/7シェア</div><div class="val bad">52.6%</div></div>
+        <div class="metric-row"><div class="label">増加ポイント</div><div class="val bad">+18.8pp</div></div>
+        <div class="metric-row"><div class="label">活動時間帯</div><div class="val">全24h</div></div>
+      </div>
+      <div class="verdict-card">
+        <div class="verdict-badge danger">SHARE SHIFT</div>
+        <h3>SO972系: +9.3pp</h3>
+        <div class="metric-row"><div class="label">3/2シェア</div><div class="val">11.8%</div></div>
+        <div class="metric-row"><div class="label">3/7シェア</div><div class="val bad">21.1%</div></div>
+        <div class="metric-row"><div class="label">増加ポイント</div><div class="val bad">+9.3pp</div></div>
+        <div class="metric-row"><div class="label">集中時間帯</div><div class="val">9-16時</div></div>
+      </div>
+      <div class="verdict-card">
+        <div class="verdict-badge danger">OUR LOSS</div>
+        <h3>1900film: -11.8pp</h3>
+        <div class="metric-row"><div class="label">3/2シェア</div><div class="val good">25.0%</div></div>
+        <div class="metric-row"><div class="label">3/7シェア</div><div class="val bad">13.2%</div></div>
+        <div class="metric-row"><div class="label">下落ポイント</div><div class="val bad">-11.8pp</div></div>
+        <div class="metric-row"><div class="label">CV取得帯</div><div class="val warn">11時のみ</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECTION 5: Time-of-Day Heatmap ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label amber">SECTION 05</div>
+  <h2>LOW日 時間帯別CVロスト先</h2>
+  <p class="section-desc">3/7（最悪日）の全38件CVを時間帯×サイトグループで展開。当社CVが消失する6-7時と13-16時にレントラックスとSO972系がCVを獲得。</p>
+
+  <div style="margin-bottom:32px">
+    <h3 style="font-size:1.1rem;margin-bottom:16px">3/7 時間帯×CV帰属先マップ</h3>
+    <div class="heatmap-container">
+      <div class="heatmap-grid" style="grid-template-columns: 110px repeat(24, 1fr);">
+        <!-- Header row -->
+        <div class="h-header"></div>
+        <div class="h-header">0</div><div class="h-header">1</div><div class="h-header">2</div><div class="h-header">3</div>
+        <div class="h-header">4</div><div class="h-header">5</div><div class="h-header" style="color:var(--accent-red)">6</div><div class="h-header" style="color:var(--accent-red)">7</div>
+        <div class="h-header">8</div><div class="h-header">9</div><div class="h-header">10</div><div class="h-header">11</div>
+        <div class="h-header">12</div><div class="h-header" style="color:var(--accent-red)">13</div><div class="h-header" style="color:var(--accent-red)">14</div><div class="h-header" style="color:var(--accent-red)">15</div>
+        <div class="h-header" style="color:var(--accent-red)">16</div><div class="h-header">17</div><div class="h-header">18</div><div class="h-header">19</div>
+        <div class="h-header">20</div><div class="h-header">21</div><div class="h-header">22</div><div class="h-header">23</div>
+        <!-- 1900film -->
+        <div class="h-row-label" style="color:var(--accent-blue)">1900film</div>
+        <div class="h-cell c-1900">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div><div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-1900">1</div><div class="h-cell c-1900" style="font-weight:900">3</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div><div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div><div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div>
+        <div class="h-cell c-empty" style="background:rgba(239,68,68,0.2);color:var(--accent-red);font-weight:900">0</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-1900">1</div><div class="h-cell c-empty">-</div>
+        <!-- レントラックス -->
+        <div class="h-row-label" style="color:var(--accent-coral)">レントラックス</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-rent">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-rent">1</div>
+        <div class="h-cell c-rent">1</div><div class="h-cell c-rent">1</div><div class="h-cell c-rent">2</div><div class="h-cell c-rent">2</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-rent" style="font-weight:900">3</div><div class="h-cell c-rent" style="font-weight:900">2</div><div class="h-cell c-rent" style="font-weight:900">2</div>
+        <div class="h-cell c-rent" style="font-weight:900">2</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-rent">1</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-rent">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-rent">2</div>
+        <!-- SO972系 -->
+        <div class="h-row-label" style="color:var(--accent-purple)">SO972系</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-so">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-so" style="font-weight:900">2</div><div class="h-cell c-so" style="font-weight:900">2</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-so">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-so">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-so">1</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <!-- AT -->
+        <div class="h-row-label" style="color:var(--accent-emerald)">アクセストレード</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-at">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-at">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-at">1</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-at">1</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+        <div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div><div class="h-cell c-empty">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="blindspot red">
+    <div class="blindspot-tag red">6-7時 早朝ゴールデン帯</div>
+    <h3>1900film: 0件 / レントラックス: 1件</h3>
+    <p>CVR Deep-Diveで特定した「早朝6-7時が最大分岐点」と完全一致。HIGH日には1900filmがCVR 3.7%を記録する時間帯で、LOW日は完全消失。レントラックスのアフィリエイト記事が早朝検索ユーザーを吸収。</p>
+  </div>
+
+  <div class="blindspot red">
+    <div class="blindspot-tag red">13-16時 午後帯</div>
+    <h3>1900film: 0件 / レントラックス: 9件 + SO972系: 2件</h3>
+    <p>4時間で11件のCVが発生しているにも関わらず、1900filmは1件も獲得できず。レントラックス経由のアフィリエイトサイトが昼過ぎ〜夕方の検索需要を独占。SO972系も9-10時台に集中してCVを取得。</p>
+  </div>
+</section>
+
+<!-- ========== SECTION 6: 3/12 Confirmation ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label amber">SECTION 06</div>
+  <h2>3/12（直近LOW日）再現パターン</h2>
+  <p class="section-desc">3/7と異なるLOW日でも同じ構造が再現。8-11時帯で1900filmが完全消失し、SO972系が13-15時で7件を独占。</p>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>時間帯</th>
+          <th class="num" style="color:var(--accent-blue)">1900film</th>
+          <th class="num" style="color:var(--accent-coral)">レントラ</th>
+          <th class="num" style="color:var(--accent-purple)">SO972</th>
+          <th class="num" style="color:var(--accent-emerald)">AT</th>
+          <th class="num" style="color:var(--accent-amber)">Direct</th>
+          <th class="num">A8</th>
+          <th class="num">合計</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0-5時</td><td class="num">0</td><td class="num">4</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+        <tr style="background:rgba(239,68,68,0.05)"><td><strong style="color:var(--accent-red)">6-7時</strong></td><td class="num" style="color:var(--accent-red);font-weight:800">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">3</td></tr>
+        <tr style="background:rgba(239,68,68,0.05)"><td><strong style="color:var(--accent-red)">8-11時</strong></td><td class="num" style="color:var(--accent-red);font-weight:800">0</td><td class="num" style="font-weight:700">5</td><td class="num">2</td><td class="num" style="font-weight:700">3</td><td class="num">3</td><td class="num">0</td><td class="num" style="font-weight:700">13</td></tr>
+        <tr><td>12時</td><td class="num" style="color:var(--accent-blue)">1</td><td class="num">1</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">5</td></tr>
+        <tr style="background:rgba(239,68,68,0.05)"><td><strong style="color:var(--accent-red)">13-15時</strong></td><td class="num" style="color:var(--accent-red);font-weight:800">0</td><td class="num">3</td><td class="num" style="font-weight:700;color:var(--accent-purple)">7</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num" style="font-weight:700">10</td></tr>
+        <tr><td>16時</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">3</td></tr>
+        <tr><td>17時</td><td class="num" style="color:var(--accent-blue)">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">3</td></tr>
+        <tr><td>18-23時</td><td class="num" style="color:var(--accent-blue)">4</td><td class="num">4</td><td class="num">5</td><td class="num">1</td><td class="num">3</td><td class="num">0</td><td class="num">17</td></tr>
+        <tr style="font-weight:700;border-top:2px solid var(--border)">
+          <td>合計</td>
+          <td class="num" style="color:var(--accent-blue)">7</td>
+          <td class="num" style="color:var(--accent-coral)">18</td>
+          <td class="num" style="color:var(--accent-purple)">17</td>
+          <td class="num" style="color:var(--accent-emerald)">10</td>
+          <td class="num" style="color:var(--accent-amber)">6</td>
+          <td class="num">2</td>
+          <td class="num">60</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ========== SECTION 7: Conclusion ========== -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-label emerald">SECTION 07 &mdash; CONCLUSION</div>
+  <h2>CVロスト先ランキングと構造</h2>
+  <p class="section-desc">LOW日に当社CVを吸収しているサイトを優先順位付きで特定。</p>
+
+  <div class="verdict-grid" style="margin-bottom:32px">
+    <div class="verdict-card" style="border-top:3px solid var(--accent-coral)">
+      <div class="verdict-badge danger">1位 最大受益者</div>
+      <h3 style="color:var(--accent-coral)">レントラックス</h3>
+      <div class="metric-row"><div class="label">シェア上昇</div><div class="val bad">+2.9pp</div></div>
+      <div class="metric-row"><div class="label">3/7占有率</div><div class="val bad">52.6%</div></div>
+      <div class="metric-row"><div class="label">主力adcode</div><div class="val">rent_a (438件)</div></div>
+      <div class="metric-row"><div class="label">メカニズム</div><div class="val">アフィリ記事SEO</div></div>
+    </div>
+    <div class="verdict-card" style="border-top:3px solid var(--accent-purple)">
+      <div class="verdict-badge warning">2位</div>
+      <h3 style="color:var(--accent-purple)">SO972系（他社リスティング）</h3>
+      <div class="metric-row"><div class="label">シェア上昇</div><div class="val bad">+1.2pp</div></div>
+      <div class="metric-row"><div class="label">3/7占有率</div><div class="val bad">21.1%</div></div>
+      <div class="metric-row"><div class="label">主力adcode</div><div class="val">so_972_2gli (191件)</div></div>
+      <div class="metric-row"><div class="label">メカニズム</div><div class="val">入札競争・IS低下時</div></div>
+    </div>
+    <div class="verdict-card" style="border-top:3px solid var(--text-muted)">
+      <div class="verdict-badge info">3位</div>
+      <h3>A8</h3>
+      <div class="metric-row"><div class="label">シェア変化</div><div class="val warn">+0.8pp (倍増)</div></div>
+      <div class="metric-row"><div class="label">絶対数</div><div class="val">少量(16件/30日)</div></div>
+      <div class="metric-row"><div class="label">主力adcode</div><div class="val">a8 (16件)</div></div>
+      <div class="metric-row"><div class="label">メカニズム</div><div class="val">アフィリ記事</div></div>
+    </div>
+  </div>
+
+  <div class="summary-box" style="border-left:4px solid var(--accent-red)">
+    <h3 style="background:linear-gradient(135deg,var(--accent-red),var(--accent-coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">CVロスト発生の時間帯パターン</h3>
+    <p>
+      <strong style="color:var(--text-primary)">早朝6-7時</strong>: 1900filmが完全不在 &rarr; レントラックスが独占<br>
+      <strong style="color:var(--text-primary)">午前8-11時</strong>: 3/12型では1900filmが消失 &rarr; AT+レントラックスが吸収<br>
+      <strong style="color:var(--text-primary)">午後13-16時</strong>: 1900filmが完全不在 &rarr; レントラックス+SO972系が独占<br>
+      <strong style="color:var(--text-primary)">夕夜18-23時</strong>: 1900filmが復活する唯一の帯域
+    </p>
+  </div>
+
+  <h3 style="font-size:1.1rem;margin-bottom:16px;margin-top:32px">Next Actions</h3>
+  <ul class="checklist">
+    <li class="check-item">
+      <span class="priority p1">P1</span>
+      <div class="text"><strong>早朝6-7時の入札強化</strong> &mdash; レントラックスのアフィリエイト記事に先んじて広告掲載を確保。時間帯入札+20%以上を推奨。</div>
+    </li>
+    <li class="check-item">
+      <span class="priority p1">P1</span>
+      <div class="text"><strong>13-16時の広告表示率(IS)改善</strong> &mdash; SO972系との入札競争で負けている時間帯。品質スコア改善 or 入札引き上げでIS回復。</div>
+    </li>
+    <li class="check-item">
+      <span class="priority p2">P2</span>
+      <div class="text"><strong>レントラックス経由の自社アフィリエイト強化</strong> &mdash; rent_a(438件)は最大のCV獲得源。自社アフィリエイトプログラムのレントラックス経由送客を増やすことで、ロストCVを自社CVに転換可能。</div>
+    </li>
+    <li class="check-item">
+      <span class="priority p2">P2</span>
+      <div class="text"><strong>SO972のadcode調査</strong> &mdash; so_972_2gliが191件のCVを取得。この広告主の正体・LP・訴求を特定し、差別化ポイントを検討。</div>
+    </li>
+    <li class="check-item">
+      <span class="priority p3">P3</span>
+      <div class="text"><strong>LOW日予兆の早期検知</strong> &mdash; 6-7時のCVR 0%が当日全体のLOW化を予測。午前中の実績をリアルタイム監視し、午後の入札を動的調整するルールを検討。</div>
+    </li>
+  </ul>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <p>LUTEIN CVロスト先 競合MECE分析 | Data Source: sGTM lutein_cv (analytics_475852472) | Period: 2026-02-11 ~ 2026-03-12</p>
+  <p style="margin-top:8px">Generated by Claude Code | 1900film Intelligence</p>
+</footer>
+
+<!-- ========== CHART SCRIPT ========== -->
+<script>
+const dailyData = [
+  {d:"2/11",type:"H",g:{f:12,r:30,a:13,s:15,d:7,o:2}},
+  {d:"2/12",type:"M",g:{f:13,r:19,a:13,s:6,d:3,o:0}},
+  {d:"2/13",type:"H",g:{f:11,r:20,a:10,s:7,d:2,o:0}},
+  {d:"2/14",type:"M",g:{f:8,r:27,a:13,s:12,d:1,o:0}},
+  {d:"2/15",type:"H",g:{f:12,r:37,a:17,s:11,d:0,o:0}},
+  {d:"2/16",type:"M",g:{f:14,r:17,a:13,s:10,d:2,o:0}},
+  {d:"2/17",type:"M",g:{f:8,r:28,a:11,s:4,d:3,o:0}},
+  {d:"2/18",type:"L",g:{f:8,r:19,a:6,s:6,d:3,o:0}},
+  {d:"2/19",type:"M",g:{f:8,r:20,a:12,s:7,d:1,o:0}},
+  {d:"2/20",type:"L",g:{f:6,r:18,a:10,s:7,d:3,o:1}},
+  {d:"2/21",type:"H",g:{f:11,r:25,a:7,s:8,d:4,o:0}},
+  {d:"2/22",type:"L",g:{f:10,r:18,a:11,s:12,d:5,o:1}},
+  {d:"2/23",type:"H",g:{f:13,r:35,a:15,s:10,d:3,o:0}},
+  {d:"2/24",type:"H",g:{f:14,r:32,a:13,s:14,d:2,o:7}},
+  {d:"2/25",type:"H",g:{f:11,r:25,a:19,s:19,d:3,o:1}},
+  {d:"2/26",type:"M",g:{f:13,r:18,a:11,s:3,d:4,o:1}},
+  {d:"2/27",type:"M",g:{f:10,r:20,a:11,s:12,d:4,o:1}},
+  {d:"2/28",type:"H",g:{f:16,r:19,a:6,s:13,d:3,o:1}},
+  {d:"3/1",type:"M",g:{f:8,r:32,a:24,s:10,d:6,o:0}},
+  {d:"3/2",type:"H",g:{f:17,r:23,a:13,s:8,d:7,o:0}},
+  {d:"3/3",type:"M",g:{f:8,r:19,a:12,s:11,d:1,o:2}},
+  {d:"3/4",type:"L",g:{f:8,r:25,a:8,s:11,d:0,o:2}},
+  {d:"3/5",type:"M",g:{f:11,r:28,a:6,s:8,d:2,o:2}},
+  {d:"3/6",type:"L",g:{f:17,r:31,a:14,s:6,d:2,o:0}},
+  {d:"3/7",type:"L",g:{f:5,r:20,a:4,s:8,d:0,o:1}},
+  {d:"3/8",type:"H",g:{f:14,r:16,a:9,s:6,d:1,o:0}},
+  {d:"3/9",type:"H",g:{f:17,r:18,a:7,s:12,d:2,o:0}},
+  {d:"3/10",type:"M",g:{f:7,r:15,a:14,s:5,d:4,o:0}},
+  {d:"3/11",type:"H",g:{f:14,r:22,a:10,s:8,d:3,o:0}},
+  {d:"3/12",type:"L",g:{f:7,r:20,a:10,s:16,d:6,o:2}}
+];
+
+const maxTotal = Math.max(...dailyData.map(d => {
+  const g = d.g;
+  return g.f + g.r + g.a + g.s + g.d + g.o;
+}));
+const chartH = 240;
+const container = document.getElementById('stackedChart');
+
+dailyData.forEach(day => {
+  const g = day.g;
+  const total = g.f + g.r + g.a + g.s + g.d + g.o;
+  const scale = chartH / maxTotal;
+
+  const grp = document.createElement('div');
+  grp.className = 'stacked-group';
+
+  const col = document.createElement('div');
+  col.className = 'stacked-col';
+
+  const segs = [
+    {cls:'s-other', val:g.o, name:'A8+他'},
+    {cls:'s-direct', val:g.d, name:'Direct'},
+    {cls:'s-so', val:g.s, name:'SO972'},
+    {cls:'s-at', val:g.a, name:'AT'},
+    {cls:'s-rent', val:g.r, name:'レントラ'},
+    {cls:'s-1900', val:g.f, name:'1900film'}
+  ];
+
+  segs.forEach(s => {
+    if (s.val > 0) {
+      const seg = document.createElement('div');
+      seg.className = 'stacked-seg ' + s.cls;
+      seg.style.height = (s.val * scale) + 'px';
+      seg.setAttribute('data-tip', s.name + ': ' + s.val + ' (' + Math.round(100*s.val/total) + '%)');
+      col.appendChild(seg);
+    }
+  });
+
+  grp.appendChild(col);
+
+  const label = document.createElement('div');
+  label.className = 'stacked-date' + (day.type === 'L' ? ' is-low' : '');
+  label.textContent = day.d;
+  grp.appendChild(label);
+
+  container.appendChild(grp);
+});
+</script>
+
+</body>
+</html>
